@@ -6,7 +6,7 @@ from fpdf import FPDF
 
 # Configuración de la página
 st.set_page_config(
-    page_title="AgroYaracuy & Región | Mercado Agrícola Digital",
+    page_title="AgroYaracuy & Región | Plataforma Multi-Rol",
     page_icon="🌾",
     layout="wide"
 )
@@ -39,7 +39,7 @@ with col_logo2:
             unsafe_allow_html=True
         )
 
-st.markdown("<h3 style='text-align: center; color: #1565C0;'>Mercado Bursátil, Corretaje y Blindaje Tecnológico Agrícola</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #1565C0;'>Sistema de Corretaje Agrícola Digital con Control por Roles</h3>", unsafe_allow_html=True)
 st.markdown("<h5 style='text-align: center; color: #2E7D32;'>Eje de Operaciones: Yaracuy - Lara - Carabobo</h5>", unsafe_allow_html=True)
 st.markdown("---")
 
@@ -60,134 +60,89 @@ if "transacciones_cerradas" not in st.session_state:
     st.session_state.transacciones_cerradas = []
 
 # ----------------------------------------------------
-# MENÚ DE NAVEGACIÓN PRINCIPAL
+# SISTEMA DE CONTROL DE ACCESO BASADO EN ROLES (RBAC)
 # ----------------------------------------------------
-menu = st.sidebar.selectbox("Seleccione el Módulo del Sistema:", [
-    "📖 Reseña y Blindaje de Negocio",
-    "🚜 Menú de Requerimientos del Campo",
-    "📝 Afiliación de Agrotiendas (Contrato)",
-    "🛒 Subasta Inversa (Productor - Anonimizada)",
-    "🏪 Panel de Cotización (Agrotiendas)",
-    "📄 Generador de Notas de Entrega y Órdenes (PDF)",
-    "💳 Pasarela de Pago Móvil BDV"
+st.sidebar.markdown("### 🔐 Control de Acceso por Roles")
+rol_usuario = st.sidebar.selectbox("Seleccione su Rol en el Sistema:", [
+    "🚜 Productor Agrícola",
+    "🏪 Agrotienda Afiliada",
+    "⚙️ Administrador del Sistema"
 ])
 
+st.sidebar.divider()
+
+# Filtrado dinámico de menús según el rol seleccionado
+if rol_usuario == "🚜 Productor Agrícola":
+    st.sidebar.markdown("#### 👤 Perfil: Productor")
+    menu = st.sidebar.selectbox("Seleccione Módulo:", [
+        "🛒 Lanzar Subasta Inversa (Anónima)",
+        "📊 Mis Pujas y Adjudicación",
+        "🚜 Requerimientos del Campo"
+    ])
+
+elif rol_usuario == "🏪 Agrotienda Afiliada":
+    st.sidebar.markdown("#### 🏪 Perfil: Agrotienda")
+    menu = st.sidebar.selectbox("Seleccione Módulo:", [
+        "📝 Afiliación y Contrato Mercantil",
+        "🏪 Panel de Cotización Abierta",
+        "💳 Pasarela de Pago Móvil BDV"
+    ])
+
+else:  # Administrador del Sistema
+    st.sidebar.markdown("#### ⚙️ Perfil: Administrador")
+    menu = st.sidebar.selectbox("Seleccione Módulo:", [
+        "📊 Panel General de Control",
+        "📄 Generador de Notas de Entrega (PDF)",
+        "📑 Auditoría de Transacciones",
+        "💳 Pasarela de Pago Móvil BDV"
+    ])
+
 # ----------------------------------------------------
-# MÓDULO 1: RESEÑA Y BLINDAJE DE NEGOCIO
+# MÓDULOS DEL ROL: PRODUCTOR AGRÍCOLA
 # ----------------------------------------------------
-if menu == "📖 Reseña y Blindaje de Negocio":
-    st.header("📖 Reseña y Lógica de Protección Anti-Desintermediación")
-    st.write(
-        f"**{EMPRESA_NOMBRE}** (RIF: **{EMPRESA_RIF}**) opera bajo un modelo de corretaje digital estricto. "
-        "Para evitar la evasión de acuerdos ('tratos por fuera'), el sistema implementa una arquitectura de **Anonimización Dinámica**: "
-        "las agrotiendas compiten en las subastas sin conocer la identidad ni el teléfono directo del productor. "
-        "La conexión y liberación de datos fiscales y de contacto solo ocurre tras la adjudicación formal y el uso de los instrumentos de pago "
-        "respaldados por la plataforma."
-    )
+if menu == "🛒 Lanzar Subasta Inversa (Anónima)":
+    st.header("🛒 Módulo de Subasta Inversa (Productor)")
+    st.markdown("Publique su necesidad de insumos. Su nombre y teléfono **permanecen ocultos** para evitar contactos por fuera hasta que adjudique una oferta.")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("🛡️ Mecanismos de Blindaje Tecnológico")
-        st.write("• **Ocultamiento Preventivo:** Cero exposición de datos del productor durante la puja.")
-        st.write("• **Trazabilidad Legal:** Contrato de adhesión electrónico con validez mercantil y fiscal.")
-        st.write("• **Documentación Oficial:** Emisión obligatoria de Notas de Entrega y Órdenes en PDF para respaldo contable.")
-    with col2:
-        st.subheader("🌟 Fidelidad Tecnológica (Lock-in)")
-        st.write("• **Garantía Operativa:** Centralización de pagos seguros vía Banco de Venezuela.")
-        st.write("• **Historial Verificable:** Reputación comercial transparente en Yaracuy, Lara y Carabobo.")
-        st.write("• **Velocidad Logística:** Acceso inmediato a inventarios críticos sin intermediarios abusivos.")
-
-# ----------------------------------------------------
-# MÓDULO 2: MENÚ DE REQUERIMIENTOS DEL CAMPO
-# ----------------------------------------------------
-elif menu == "🚜 Menú de Requerimientos del Campo":
-    st.header("📋 Directorio de Insumos y Urgencias Agrícolas")
-    requerimientos = {
-        "Fertilizantes y Nutrición de Suelos": "Urea, Nitrato de Amonio, NPK y enmiendas calcáreas para maíz, caña y hortalizas.",
-        "Sanidad y Vacunación Animal": "Vacunas contra Aftosa, Rabia Silvestre y complejos vitamínicos veterinarios.",
-        "Agroquímicos y Control de Plagas": "Herbicidas sistémicos (Glifosato), insecticidas y fungicidas preventivos/curativos.",
-        "Maquinaria y Repuestos Críticos": "Correas de transmisión, filtros, mangueras de alta presión y discos de arado.",
-        "Semillas Certificadas": "Material genético certificado de maíz, caraota, sorgo y leguminosas tropicales."
-    }
-    for categoria, desc in requerimientos.items():
-        with st.expander(f"📦 {categoria}"):
-            st.write(desc)
-
-# ----------------------------------------------------
-# MÓDULO 3: AFILIACIÓN DE AGROTIENDAS Y CONTRATO
-# ----------------------------------------------------
-elif menu == "📝 Afiliación de Agrotiendas (Contrato)":
-    st.header("📝 Contrato de Adhesión y Corretaje Digital Mercantil")
-    with st.expander("🔍 Leer Términos Legales del Contrato", expanded=False):
-        st.write(f"CONTRATO DE ADHESIÓN - {EMPRESA_NOMBRE} (RIF: {EMPRESA_RIF})")
-        st.write("PRIMERA: La agrotienda acepta canalizar sus ventas regionales a través de la plataforma tecnológica.")
-        st.write("SEGUNDA: Se prohíbe el contacto directo eludido previo a la adjudicación bajo sanción de expulsión del RIF comercial.")
-        st.write(f"TERCERA: Operaciones financieras respaldadas por {EMPRESA_BANCO}, Pagomóvil: {EMPRESA_TELEFONO}.")
-
-    st.markdown("### ✍️ Formulario de Incorporación Comercial")
-    with st.form("form_afiliacion"):
-        nombre_tienda = st.text_input("Nombre de la Agrotienda:")
-        rif_tienda = st.text_input("RIF de la Agrotienda:")
-        estado_tienda = st.selectbox("Estado:", ["Yaracuy", "Lara", "Carabobo"])
-        municipio_tienda = st.text_input("Municipio:")
-        telefono_tienda = st.text_input("Teléfono WhatsApp:")
-        acepta = st.checkbox("✅ Acepto los términos del Contrato de Adhesión y las normas anti-desintermediación.")
-        
-        if st.form_submit_button("Firmar Adhesión Digital"):
-            if acepta and nombre_tienda and rif_tienda:
-                st.session_state.agrotiendas_registradas.append({
-                    "nombre": nombre_tienda, "estado": estado_tienda,
-                    "municipio": municipio_tienda, "telefono": telefono_tienda
-                })
-                st.success(f"¡{nombre_tienda} afiliada con éxito bajo supervisión de {EMPRESA_NOMBRE}!")
-            else:
-                st.error("Complete los campos y acepte el contrato.")
-
-# ----------------------------------------------------
-# MÓDULO 4: SUBASTA INVERSA (PRODUCTOR - ANONIMIZADA)
-# ----------------------------------------------------
-elif menu == "🛒 Subasta Inversa (Productor - Anonimizada)":
-    st.header("🛒 Módulo de Subasta Inversa (Protección Activa)")
-    st.markdown("Sus datos de contacto **permanecen ocultos** para las agrotiendas hasta que usted decida aceptar formalmente una oferta.")
-    
-    with st.form("form_subasta"):
-        nombre_prod = st.text_input("Nombre o Código del Productor / Finca (Ej: Finca Anonimizada #104):")
-        estado_prod = st.selectbox("Estado:", ["Yaracuy", "Lara", "Carabobo"])
+    with st.form("form_subasta_prod"):
+        nombre_prod = st.text_input("Nombre de Finca / Productor (Ej: Finca San José):")
+        estado_prod = st.selectbox("Estado de Ubicación:", ["Yaracuy", "Lara", "Carabobo"])
         municipio_prod = st.text_input("Municipio:")
-        insumo_req = st.text_input("Insumo Requerido:")
-        cant_req = st.text_input("Cantidad:")
-        tel_prod = st.text_input("WhatsApp Privado (Solo se revela tras adjudicar):")
+        insumo_req = st.text_input("Insumo / Repuesto Requerido:")
+        cant_req = st.text_input("Cantidad Requerida (Ej: 15 sacos):")
+        tel_prod = st.text_input("WhatsApp Privado (Se libera al adjudicar):")
         
-        if st.form_submit_button("🚀 Lanzar Subasta Segura"):
+        if st.form_submit_button("🚀 Emitir Subasta Regional Segura"):
             if nombre_prod and insumo_req and tel_prod:
                 pid = len(st.session_state.pedidos) + 1
                 st.session_state.pedidos.append({
                     "id": pid, "productor": nombre_prod, "estado": estado_prod,
                     "municipio": municipio_prod, "insumo": insumo_req, "cantidad": cant_req, "telefono": tel_prod
                 })
-                st.success(f"Subasta #{pid} publicada de forma anónima en la red regional.")
+                st.success(f"¡Subasta #{pid} publicada correctamente en la red central!")
             else:
-                st.error("Complete todos los campos.")
+                st.error("Por favor complete los campos obligatorios.")
 
-    st.divider()
-    st.subheader("📊 Seguimiento de Pujas y Adjudicación")
+elif menu == "📊 Mis Pujas y Adjudicación":
+    st.header("📊 Seguimiento de Ofertas y Adjudicación")
+    st.markdown("Consulte las pujas de las agrotiendas y seleccione la mejor opción.")
+    
     if not st.session_state.pedidos:
-        st.info("No hay subastas activas.")
+        st.info("No tiene solicitudes de subasta activas en este momento.")
     else:
         for p in st.session_state.pedidos:
-            st.markdown(f"**Subasta ID #{p['id']}** | Zona: *{p['estado']} - {p['municipio']}* | Requerimiento: **{p['insumo']} ({p['cantidad']})**")
+            st.markdown(f"**Subasta #{p['id']}** | Zona: *{p['estado']} - {p['municipio']}* | Insumo: **{p['insumo']} ({p['cantidad']})**")
             ofertas_p = [o for o in st.session_state.ofertas if o["pedido_id"] == p["id"]]
             
             if not ofertas_p:
-                st.caption("_Las agrotiendas están compitiendo en precio (Identidad del productor protegida)._")
+                st.caption("_Esperando que las agrotiendas compitan con precios..._")
             else:
                 for o in sorted(ofertas_p, key=lambda x: x["precio"]):
                     c1, c2, c3 = st.columns([2, 2, 2])
                     with c1: st.write(f"🏪 **{o['tienda']}** ({o['estado_tienda']})")
                     with c2: st.write(f"💲 **${o['precio']:.2f} USD** | {o['tiempo']}")
                     with c3:
-                        if st.button(f"✅ Adjudicar y Revelar Contacto #{o['pedido_id']}", key=f"adj_{o['pedido_id']}_{o['tienda']}"):
-                            # Guardar en transacciones cerradas para la generación de documentos legales
+                        if st.button(f"✅ Adjudicar Oferta #{o['pedido_id']}", key=f"btn_adj_{o['pedido_id']}_{o['tienda']}"):
                             st.session_state.transacciones_cerradas.append({
                                 "id_transaccion": len(st.session_state.transacciones_cerradas) + 1,
                                 "productor": p['productor'],
@@ -199,67 +154,117 @@ elif menu == "🛒 Subasta Inversa (Productor - Anonimizada)":
                                 "precio": o['precio'],
                                 "zona": f"{p['estado']} - {p['municipio']}"
                             })
-                            st.success("¡Oferta adjudicada! El sistema ha desbloqueado los datos de contacto y generado la orden legal.")
-                            msg = f"Hola {o['tienda']}, he adjudicado su oferta de ${o['precio']:.2f} por la plataforma de {EMPRESA_NOMBRE}."
+                            st.success("¡Oferta adjudicada! Contacto y orden legal generados con éxito.")
+                            msg = f"Hola {o['tienda']}, he adjudicado su oferta de ${o['precio']:.2f} en {EMPRESA_NOMBRE}."
                             url_wa = f"https://wa.me/58{o['telefono_tienda'][-10:]}?text={urllib.parse.quote(msg)}"
-                            st.markdown(f"[💬 Contactar Agrotienda Adjudicada]({url_wa})", unsafe_allow_html=True)
+                            st.markdown(f"[💬 Contactar Agrotienda vía WhatsApp]({url_wa})", unsafe_allow_html=True)
             st.divider()
 
+elif menu == "🚜 Requerimientos del Campo":
+    st.header("📋 Directorio de Insumos y Urgencias Agrícolas")
+    requerimientos = {
+        "Fertilizantes y Nutrición de Suelos": "Urea, Nitrato de Amonio, NPK y enmiendas calcáreas.",
+        "Sanidad y Vacunación Animal": "Vacunas contra Aftosa, Rabia Silvestre y antibióticos veterinarios.",
+        "Agroquímicos y Control de Plagas": "Herbicidas sistémicos (Glifosato), insecticidas y fungicidas.",
+        "Maquinaria y Repuestos Críticos": "Correas de transmisión, filtros, mangueras y discos de arado.",
+        "Semillas Certificadas": "Material genético certificado de maíz, caraota y sorgo."
+    }
+    for cat, desc in requerimientos.items():
+        with st.expander(f"📦 {cat}"):
+            st.write(desc)
+
 # ----------------------------------------------------
-# MÓDULO 5: PANEL DE COTIZACIÓN (AGROTIENDAS)
+# MÓDULOS DEL ROL: AGROTIENDA AFILIADA
 # ----------------------------------------------------
-elif menu == "🏪 Panel de Cotización (Agrotiendas)":
+elif menu == "📝 Afiliación y Contrato Mercantil":
+    st.header("📝 Contrato de Adhesión y Corretaje Digital")
+    with st.expander("🔍 Leer Términos Legales del Contrato", expanded=False):
+        st.write(f"CONTRATO - {EMPRESA_NOMBRE} (RIF: {EMPRESA_RIF})")
+        st.write("PRIMERA: La agrotienda operará bajo estrictas normas de corretaje transparente.")
+        st.write("SEGUNDA: Prohibida la elusión de comisiones o tratos directos previos a la adjudicación.")
+        st.write(f"TERCERA: Pagos tramitados por {EMPRESA_BANCO}, Pagomóvil: {EMPRESA_TELEFONO}.")
+
+    st.markdown("### ✍️ Formulario de Registro de Agrotienda")
+    with st.form("form_afilia_tienda"):
+        t_nom = st.text_input("Nombre Comercial de la Agrotienda:")
+        t_rif = st.text_input("RIF:")
+        t_est = st.selectbox("Estado:", ["Yaracuy", "Lara", "Carabobo"])
+        t_mun = st.text_input("Municipio:")
+        t_tel = st.text_input("Teléfono de Contacto:")
+        t_acepta = st.checkbox("✅ Acepto los términos del contrato de adhesión.")
+        
+        if st.form_submit_button("Registrar Agrotienda"):
+            if t_acepta and t_nom and t_rif:
+                st.session_state.agrotiendas_registradas.append({
+                    "nombre": t_nom, "estado": t_est, "municipio": t_mun, "telefono": t_tel
+                })
+                st.success(f"¡{t_nom} incorporada exitosamente a la red regional!")
+            else:
+                st.error("Complete los datos requeridos y acepte el contrato.")
+
+elif menu == "🏪 Panel de Cotización Abierta":
     st.header("🏪 Panel de Competencia (Agrotiendas)")
-    st.markdown("Las solicitudes muestran únicamente ubicación geográfica para garantizar el corretaje transparente.")
+    st.markdown("Visualice requerimientos activos anonimizados por zona y envíe su mejor oferta de precio.")
     
     if not st.session_state.pedidos:
-        st.warning("No hay requerimientos activos.")
+        st.warning("No hay solicitudes de productores activas en este momento.")
     else:
         for p in st.session_state.pedidos:
             with st.container():
-                st.markdown(f"### 🔔 Demanda Anónima #{p['id']} - Zona: {p['estado']} / {p['municipio']}")
-                st.write(f"**Insumo Solicitado:** {p['insumo']} | **Cantidad:** {p['cantidad']}")
-                st.info("🔒 _Identidad del productor protegida por el sistema anti-desintermediación._")
+                st.markdown(f"### 🔔 Demanda Zona: [{p['estado']}] - Municipio {p['municipio']}")
+                st.write(f"**Insumo:** {p['insumo']} | **Cantidad:** {p['cantidad']}")
+                st.info("🔒 _Identidad del productor protegida contra desintermediación._")
                 
                 with st.form(f"form_cot_{p['id']}"):
-                    t_nombre = st.text_input("Su Agrotienda:", key=f"tn_{p['id']}")
-                    t_estado = st.selectbox("Estado de su tienda:", ["Yaracuy", "Lara", "Carabobo"], key=f"te_{p['id']}")
-                    t_precio = st.number_input("Oferta Total (USD $):", min_value=0.0, format="%.2f", key=f"tp_{p['id']}")
-                    t_tiempo = st.text_input("Condición de Entrega:", key=f"tt_{p['id']}")
-                    t_tel = st.text_input("Su Teléfono Comercial:", key=f"tel_{p['id']}")
+                    tienda_nombre = st.text_input("Nombre de su Agrotienda:", key=f"tn_{p['id']}")
+                    tienda_estado = st.selectbox("Estado de su Tienda:", ["Yaracuy", "Lara", "Carabobo"], key=f"te_{p['id']}")
+                    precio_ofertado = st.number_input("Precio Total Ofertado (USD $):", min_value=0.0, format="%.2f", key=f"tp_{p['id']}")
+                    tiempo_entrega = st.text_input("Condición de Entrega:", key=f"tt_{p['id']}")
+                    telefono_tienda = st.text_input("Su Teléfono Comercial:", key=f"tel_{p['id']}")
                     
-                    if st.form_submit_button("💡 Enviar Puja Ciega"):
-                        if t_nombre and t_precio > 0:
+                    if st.form_submit_button("💡 Enviar Puja Competitiva"):
+                        if tienda_nombre and precio_ofertado > 0:
                             st.session_state.ofertas.append({
-                                "pedido_id": p['id'], "tienda": t_nombre, "estado_tienda": t_estado,
-                                "precio": t_precio, "tiempo": t_tiempo, "telefono_tienda": t_tel
+                                "pedido_id": p['id'], "tienda": tienda_nombre, "estado_tienda": tienda_estado,
+                                "precio": precio_ofertado, "tiempo": tiempo_entrega, "telefono_tienda": telefono_tienda
                             })
-                            st.success("¡Puja registrada con éxito!")
+                            st.success("¡Oferta enviada con éxito al sistema!")
                         else:
-                            st.error("Ingrese datos válidos.")
+                            st.error("Ingrese un nombre de tienda y precio válidos.")
                 st.divider()
 
 # ----------------------------------------------------
-# MÓDULO 6: GENERADOR DE NOTAS DE ENTREGA Y ÓRDENES (PDF)
+# MÓDULOS DEL ROL: ADMINISTRADOR DEL SISTEMA
 # ----------------------------------------------------
-elif menu == "📄 Generador de Notas de Entrega y Órdenes (PDF)":
-    st.header("📄 Módulo de Validez Legal y Documentación en PDF")
-    st.markdown("Generación automática de Órdenes de Compra y Notas de Entrega respaldadas por **COMPAÑÍA HCHF4 C.A.**")
+elif menu == "📊 Panel General de Control":
+    st.header("⚙️ Panel de Control y Estadísticas del Administrador")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Subastas Activas", len(st.session_state.pedidos))
+    c2.metric("Agrotiendas Afiliadas", len(st.session_state.agrotiendas_registradas))
+    c3.metric("Transacciones Cerradas", len(st.session_state.transacciones_cerradas))
+    
+    st.divider()
+    st.subheader("🏪 Agrotiendas Registradas en la Red")
+    for ag in st.session_state.agrotiendas_registradas:
+        st.write(f"• **{ag['nombre']}** ({ag['estado']} - {ag['municipio']}) | Telf: {ag['telefono']}")
+
+elif menu == "📄 Generador de Notas de Entrega (PDF)":
+    st.header("📄 Generador de Documentación Legal (PDF)")
+    st.markdown(f"Certificados oficiales respaldados por **{EMPRESA_NOMBRE}** (RIF: {EMPRESA_RIF}).")
     
     if not st.session_state.transacciones_cerradas:
-        st.info("No hay transacciones adjudicadas para certificar documentalmente.")
+        st.info("No existen transacciones adjudicadas para generar documentos PDF.")
     else:
         for t in st.session_state.transacciones_cerradas:
-            st.markdown(f"**Transacción #{t['id_transaccion']}** | Productor: {t['productor']} ➔ Agrotienda: {t['tienda']}")
-            st.write(f"Insumo: {t['insumo']} ({t['cantidad']}) | Monto: ${t['precio']:.2f} USD")
+            st.markdown(f"**Transacción #{t['id_transaccion']}** | {t['productor']} ➔ {t['tienda']} (${t['precio']:.2f} USD)")
             
-            if st.button(f"📥 Generar Nota de Entrega oficial (PDF) #{t['id_transaccion']}", key=f"pdf_{t['id_transaccion']}"):
+            if st.button(f"📥 Descargar Nota de Entrega PDF #{t['id_transaccion']}", key=f"pdf_gen_{t['id_transaccion']}"):
                 class PDF(FPDF):
                     def header(self):
                         self.set_font("Arial", "B", 14)
                         self.cell(0, 10, EMPRESA_NOMBRE, 0, 1, "C")
                         self.set_font("Arial", "", 10)
-                        self.cell(0, 5, f"RIF: {EMPRESA_RIF} | Corretaje Agrícola Digital", 0, 1, "C")
+                        self.cell(0, 5, f"RIF: {EMPRESA_RIF} | Corretaje y Blindaje Digital", 0, 1, "C")
                         self.ln(5)
 
                 pdf = PDF()
@@ -269,41 +274,49 @@ elif menu == "📄 Generador de Notas de Entrega y Órdenes (PDF)":
                 pdf.ln(5)
                 
                 pdf.set_font("Arial", "", 10)
-                pdf.cell(0, 8, f"Transaccion Nro: {t['id_transaccion']}", 0, 1)
-                pdf.cell(0, 8, f"Zona de Operacion: {t['zona']}", 0, 1)
-                pdf.cell(0, 8, f"Productor Adjudicatario: {t['productor']}", 0, 1)
-                pdf.cell(0, 8, f"Agrotienda Proveedora: {t['tienda']}", 0, 1)
+                pdf.cell(0, 8, f"Transaccion ID: {t['id_transaccion']}", 0, 1)
+                pdf.cell(0, 8, f"Eje Regional: {t['zona']}", 0, 1)
+                pdf.cell(0, 8, f"Productor: {t['productor']} (Telf: {t['telefono_productor']})", 0, 1)
+                pdf.cell(0, 8, f"Agrotienda: {t['tienda']} (Telf: {t['telefono_tienda']})", 0, 1)
                 pdf.ln(5)
                 
                 pdf.set_font("Arial", "B", 11)
-                pdf.cell(0, 8, "Detalle del Insumo Negociado:", 0, 1)
+                pdf.cell(0, 8, "Detalle del Insumo:", 0, 1)
                 pdf.set_font("Arial", "", 10)
                 pdf.cell(0, 8, f"- Insumo: {t['insumo']}", 0, 1)
                 pdf.cell(0, 8, f"- Cantidad: {t['cantidad']}", 0, 1)
-                pdf.cell(0, 8, f"- Monto Total Acordado: ${t['precio']:.2f} USD", 0, 1)
+                pdf.cell(0, 8, f"- Monto Acordado: ${t['precio']:.2f} USD", 0, 1)
                 pdf.ln(10)
                 
                 pdf.set_font("Arial", "I", 9)
-                pdf.multi_cell(0, 5, f"Operacion validada y protegida por los protocolos de corretaje digital de {EMPRESA_NOMBRE}. Este documento sirve de comprobante de transaccion mercantil interconectando Yaracuy, Lara y Carabobo.")
+                pdf.multi_cell(0, 5, f"Certificado oficial emitido por {EMPRESA_NOMBRE}. Operación protegida contra desintermediación en Yaracuy, Lara y Carabobo.")
                 
-                nombre_archivo = f"Nota_Entrega_{t['id_transaccion']}.pdf"
-                pdf.output(nombre_archivo)
+                filename = f"Nota_Entrega_{t['id_transaccion']}.pdf"
+                pdf.output(filename)
                 
-                with open(nombre_archivo, "rb") as archivo_pdf:
+                with open(filename, "rb") as f_pdf:
                     st.download_button(
-                        label=f"⬇️ Descargar PDF Oficial (#{t['id_transaccion']})",
-                        data=archivo_pdf,
-                        file_name=nombre_archivo,
+                        label=f"⬇️ Descargar Archivo PDF (#{t['id_transaccion']})",
+                        data=f_pdf,
+                        file_name=filename,
                         mime="application/pdf"
                     )
             st.divider()
 
+elif menu == "📑 Auditoría de Transacciones":
+    st.header("📑 Auditoría y Registro Histórico")
+    if not st.session_state.transacciones_cerradas:
+        st.info("Sin registros de auditoría actuales.")
+    else:
+        df_trans = pd.DataFrame(st.session_state.transacciones_cerradas)
+        st.dataframe(df_trans, use_container_width=True)
+
 # ----------------------------------------------------
-# MÓDULO 7: PASARELA DE PAGO MÓVIL BDV
+# MÓDULO COMPARTIDO / ACCESIBLE (PASARELA DE PAGO)
 # ----------------------------------------------------
-elif menu == "💳 Pasarela de Pago Móvil BDV":
+if menu == "💳 Pasarela de Pago Móvil BDV":
     st.header("📲 Pasarela de Pago Móvil Oficial")
-    st.markdown("Liquidación segura centralizada bajo la supervisión fiscal de la operadora.")
+    st.markdown("Liquidación segura de comisiones e insumos respaldada por la operadora.")
     
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -316,15 +329,15 @@ elif menu == "💳 Pasarela de Pago Móvil BDV":
         )
         st.info(texto_banco)
     with col2:
-        st.markdown("### 📋 Validar Pago o Comisión de Corretaje")
-        with st.form("form_pago"):
-            monto_p = st.number_input("Monto en Bolívares / Divisas:", min_value=0.0, format="%.2f")
-            ref_p = st.text_input("Número de Referencia Bancaria:")
-            banco_orig = st.text_input("Banco Emisor de Origen:")
+        st.markdown("### 📋 Validar Pago o Transacción")
+        with st.form("form_pago_global"):
+            monto_p = st.number_input("Monto:", min_value=0.0, format="%.2f")
+            ref_p = st.text_input("Número de Referencia:")
+            banco_orig = st.text_input("Banco Emisor:")
             
-            if st.form_submit_button("Verificar Transacción"):
+            if st.form_submit_button("Verificar Pago en Sistema"):
                 if ref_p and monto_p > 0:
-                    st.success("¡Pago validado exitosamente en el sistema central!")
+                    st.success("¡Pago reportado y validado con éxito!")
                     msg_pago = f"Hola, reporto pago a {EMPRESA_NOMBRE} (RIF: {EMPRESA_RIF}) por {monto_p}. Ref: {ref_p}."
                     url_wa = f"https://wa.me/58{EMPRESA_TELEFONO[1:]}?text={urllib.parse.quote(msg_pago)}"
                     st.markdown(f"[📲 Notificar vía WhatsApp]({url_wa})", unsafe_allow_html=True)
