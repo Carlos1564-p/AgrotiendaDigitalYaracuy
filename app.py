@@ -104,7 +104,6 @@ elif menu == "🚜 Menú de Requerimientos del Campo":
             st.write(desc)
             if st.button(f"Publicar urgencia de: {categoria}", key=f"btn_{categoria}"):
                 st.info(f"Diríjase a la sección '🛒 Subasta y Oferta (Productor)' para cotizar {categoria}.")
-
 # ----------------------------------------------------
 # MÓDULO 3: AFILIACIÓN DE AGROTIENDAS Y CONTRATO LEGAL
 # ----------------------------------------------------
@@ -119,7 +118,6 @@ elif menu == "📝 Afiliación de Agrotiendas (Contrato)":
         **SEGUNDA (OBJETO):** La plataforma opera como un mercado digital de oferta y demanda agrícola en los estados Yaracuy, Lara y Carabobo.
         **TERCERA (CONDICIONES):** La agrotienda se compromete a mantener precios competitivos y veraces. Las transacciones financieras usan exclusivamente la cuenta de {EMPRESA_NOMBRE} ({EMPRESA_BANCO}, Pagomóvil: {EMPRESA_TELEFONO})[cite: 1].
         """)
-
     st.markdown("### ✍️ Formulario de Incorporación y Firma Digital")
     with st.form("form_afiliacion"):
         nombre_tienda = st.text_input("Nombre de la Agrotienda / Empresa:")
@@ -143,7 +141,6 @@ elif menu == "📝 Afiliación de Agrotiendas (Contrato)":
                 st.error("Debe marcar la casilla de aceptación de condiciones para formalizar el contrato.")
             else:
                 st.error("Por favor complete todos los datos requeridos.")
-
 # ----------------------------------------------------
 # MÓDULO 4: SUBASTA Y OFERTA (PRODUCTOR)
 # ----------------------------------------------------
@@ -251,5 +248,3 @@ elif menu == "💳 Pasarela de Pago Móvil BDV":
                     st.markdown(f"[📲 Enviar Comprobante vía WhatsApp]({url_pago_wa})", unsafe_allow_html=True)
                 else:
                     st.error("Por favor, ingrese un monto válido y el número de referencia.")
-
-       
