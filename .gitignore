@@ -1,0 +1,12 @@
+# Ignorar claves privadas y configuraciones del servidor
+.env
+
+# Ignorar base de datos SQLite local y archivos temporales
+*.db
+*.db-journal
+
+# Ignorar archivos del entorno virtual de Python
+__pycache__/
+*.pyc
+venv/
+.venv/
