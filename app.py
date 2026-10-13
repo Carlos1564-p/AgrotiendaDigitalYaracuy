@@ -217,7 +217,6 @@ elif menu == "🏪 Panel de Cotización (Agrotiendas)":
                         })
                         st.success("¡Oferta publicada exitosamente en la red regional!")
                 st.divider()
-
 # ----------------------------------------------------
 # MÓDULO 6: PASARELA DE PAGO MÓVIL BDV
 # ----------------------------------------------------
@@ -230,9 +229,9 @@ elif menu == "💳 Pasarela de Pago Móvil BDV":
         st.info(f"""
         ### 🏦 Datos Bancarios Oficiales:
         * **Razón Social:** {EMPRESA_NOMBRE}
-        * **RIF:** {EMPRESA_RIF}[cite: 1]
-        * **Banco:** {EMPRESA_BANCO}[cite: 1]
-        * **Teléfono Pago Móvil:** {EMPRESA_TELEFONO}[cite: 1]
+        * **RIF:** {EMPRESA_RIF}
+        * **Banco:** {EMPRESA_BANCO}
+        * **Teléfono Pago Móvil:** {EMPRESA_TELEFONO}
         """)
     with col2:
         st.markdown("### 📋 Validar Pago o Reserva")
@@ -241,10 +240,16 @@ elif menu == "💳 Pasarela de Pago Móvil BDV":
             ref_p = st.text_input("Número de Referencia Bancaria:")
             banco_orig = st.text_input("Banco de Origen:")
             
-            if st.form_submit_button("Confirmar Transacción") and ref_p and monto_p > 0:
-                st.success("¡Pago reportado y validado en el sistema!")
-                msg_pago = f"Hola, he realizado un Pago Móvil a {EMPRESA_NOMBRE} (RIF: {EMPRESA_RIF}) por un monto de ${monto_p:.2f}. Referencia: {ref_p}."
-                url_pago_wa = f"https://wa.me/58{EMPRESA_TELEFONO[1:]}?text={urllib.parse.quote(msg_pago)}"
-                st.markdown(f"[📲 Enviar Comprobante vía WhatsApp]({url_pago_wa})", unsafe_allow_html=True)
-            elif st.form_submit_button("Confirmar Transacción"):
-                st.error("Ingrese un monto válido y el número de referencia.")
+            # Se captura el botón en una sola variable para evitar conflictos de claves duplicadas
+            submitted_pago = st.form_submit_button("Confirmar Transacción")
+            
+            if submitted_pago:
+                if ref_p and monto_p > 0:
+                    st.success("¡Pago reportado y validado en el sistema!")
+                    msg_pago = f"Hola, he realizado un Pago Móvil a {EMPRESA_NOMBRE} (RIF: {EMPRESA_RIF}) por un monto de ${monto_p:.2f}. Referencia: {ref_p}."
+                    url_pago_wa = f"https://wa.me/58{EMPRESA_TELEFONO[1:]}?text={urllib.parse.quote(msg_pago)}"
+                    st.markdown(f"[📲 Enviar Comprobante vía WhatsApp]({url_pago_wa})", unsafe_allow_html=True)
+                else:
+                    st.error("Por favor, ingrese un monto válido y el número de referencia.")
+
+       
