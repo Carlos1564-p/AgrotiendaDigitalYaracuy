@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import urllib.parse
 from fpdf import FPDF
-import base64
 
 # Configuración de la página
 st.set_page_config(
@@ -11,28 +10,26 @@ st.set_page_config(
     layout="wide"
 )
 
-# Datos oficiales de la empresa
-EMPRESA_NOMBRE = "COMPANIA HCHFA CA"
-EMPRESA_RIF = "J404509216"
+# Datos oficiales de la empresa según el registro visual corporativo
+EMPRESA_NOMBRE = "COMPAÑÍA HCHF4 C.A."
+EMPRESA_RIF = "J-404509216"
 EMPRESA_BANCO = "Banco de Venezuela (0102)"
 EMPRESA_TELEFONO = "04120582064"
 
 # ----------------------------------------------------
-# 1. RENDERIZADO DEL LOGO CORPORATIVO SVG
+# RENDERIZADO DE LA IMAGEN OFICIAL DEL LOGO CORPORATIVO
 # ----------------------------------------------------
-logo_svg = f"""
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 550 130" width="100%">
-  <rect width="550" height="130" fill="#f4f6f8" rx="12"/>
-  <circle cx="65" cy="65" r="45" fill="#2E7D32"/>
-  <text x="65" y="78" font-family="Arial" font-size="38" text-anchor="middle">🌾</text>
-  <text x="130" y="52" font-family="Arial" font-size="21" font-weight="bold" fill="#1565C0">{EMPRESA_NOMBRE}</text>
-  <text x="130" y="75" font-family="Arial" font-size="12" font-weight="bold" fill="#2E7D32">MERCADO BURSÁTIL Y DIGITAL DE INSUMOS AGRÍCOLAS</text>
-  <line x1="130" y1="85" x2="510" y2="85" stroke="#FBC02D" stroke-width="3"/>
-  <text x="130" y="108" font-family="monospace" font-size="14" font-weight="bold" fill="#333333">RIF: {EMPRESA_RIF} | Cobertura: Yaracuy - Lara - Carabobo</text>
-</svg>
-"""
-b64_logo = base64.b64encode(logo_svg.encode('utf-8')).decode("utf-8")
-st.markdown(f'<div style="text-align: center;"><img src="data:image/svg+xml;base64,{b64_logo}"/></div>', unsafe_allow_html=True)
+col_logo1, col_logo2, col_logo3 = st.columns([1, 2, 1])
+with col_logo2:
+    try:
+        # Carga la imagen oficial guardada en la carpeta del proyecto
+        st.image("logo.jpg", use_container_width=True)
+    except Exception:
+        # Mensaje de respaldo por si el archivo no se encuentra en la carpeta
+        st.warning("⚠️ Coloca la imagen oficial como 'logo.jpg' en la carpeta principal del proyecto.")
+
+st.markdown("<h3 style='text-align: center; color: #1565C0;'>Mercado Bursátil y Digital de Insumos Agrícolas</h3>", unsafe_allow_html=True)
+st.markdown("<h5 style='text-align: center; color: #2E7D32;'>Cobertura: Yaracuy - Lara - Carabobo</h5>", unsafe_allow_html=True)
 st.markdown("---")
 
 # ----------------------------------------------------
