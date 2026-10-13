@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import urllib.parse
+from os import path
 from fpdf import FPDF
 
 # Configuración de la página
@@ -10,28 +11,30 @@ st.set_page_config(
     layout="wide"
 )
 
-# Datos oficiales de la empresa según el registro visual corporativo
+# Datos oficiales de la empresa
 EMPRESA_NOMBRE = "COMPAÑÍA HCHF4 C.A."
 EMPRESA_RIF = "J-404509216"
 EMPRESA_BANCO = "Banco de Venezuela (0102)"
 EMPRESA_TELEFONO = "04120582064"
 
 # ----------------------------------------------------
-# RENDERIZADO DE LA IMAGEN OFICIAL DEL LOGO CORPORATIVO
+# CARGA SEGURA DEL LOGO (LOCAL O RESPALDO VISUAL)
 # ----------------------------------------------------
 col_logo1, col_logo2, col_logo3 = st.columns([1, 2, 1])
 with col_logo2:
-    try:
-        # Carga la imagen oficial guardada en la carpeta del proyecto
-        st.image("logo.jpg", use_container_width=True)
-    except Exception:
-        # Mensaje de respaldo por si el archivo no se encuentra en la carpeta
-        st.warning("⚠️ Coloca la imagen oficial como 'logo.jpg' en la carpeta principal del proyecto.")
-
-st.markdown("<h3 style='text-align: center; color: #1565C0;'>Mercado Bursátil y Digital de Insumos Agrícolas</h3>", unsafe_allow_html=True)
-st.markdown("<h5 style='text-align: center; color: #2E7D32;'>Cobertura: Yaracuy - Lara - Carabobo</h5>", unsafe_allow_html=True)
-st.markdown("---")
-
+    # Verificamos si existe el archivo de imagen con distintas extensiones comunes
+    archivo_encontrado = None
+    for posibles_nombres in ["logo.jpg", "logo.JPG", "logo.png", "LOGO.jpg"]:
+        if path.exists(posibles_nombres):
+            archivo_encontrado = posibles_nombres
+            break
+            
+    if archivo_encontrado:
+        st.image(archivo_encontrado, use_container_width=True)
+    else:
+        # Si por alguna razón el archivo no se ha subido a GitHub, muestra un banner institucional limpio
+        st.markdown(f"""
+        <div style="background-color: #1565C0; padding: 20px; border-
 # ----------------------------------------------------
 # 2. INICIALIZACIÓN DE ESTADOS (Base de Datos en Memoria)
 # ----------------------------------------------------
