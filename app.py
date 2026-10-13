@@ -227,9 +227,10 @@ elif menu == "💳 Pasarela de Pago Móvil BDV":
 ### 🏦 Datos Bancarios Oficiales:
 * **Razón Social:** {EMPRESA_NOMBRE}
 * **RIF:** {EMPRESA_RIF}
-* **Banco:** {EMPRESA_BANCO}
-* **Teléfono Pago Móvil:** {EMPRESA_TELEFONO}
+- **Banco:** {EMPRESA_BANCO}
+- **Teléfono Pago Móvil:** {EMPRESA_TELEFONO}
 """)
+
     with col2:
         st.markdown("### 📋 Validar Pago o Reserva")
         with st.form("form_pago_robusto"):
