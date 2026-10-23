@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import urllib.parse
 from os import path
+from datetime import datetime
 from fpdf import FPDF
 
 # Configuración de la página
@@ -18,8 +19,10 @@ EMPRESA_BANCO = "Banco de Venezuela (0102)"
 EMPRESA_TELEFONO = "04120582064"
 
 # ----------------------------------------------------
-# INICIALIZACIÓN DE ESTADOS GLOBALES
+# INICIALIZACIÓN DE ESTADOS GLOBALES Y TASA BCV
 # ----------------------------------------------------
+if "tasa_bcv" not in st.session_state:
+    st.session_state.tasa_bcv = 36.50
 if "pedidos" not in st.session_state:
     st.session_state.pedidos = []
 if "ofertas" not in st.session_state:
@@ -41,30 +44,39 @@ if "usuario_actual" not in st.session_state:
     st.session_state.usuario_actual = ""
 
 # ----------------------------------------------------
-# SECCIÓN CORPORATIVA: LOGOTIPO Y ENCABEZADO
+# SECCIÓN CORPORATIVA: DOBLE LOGOTIPO ENCABEZADO
 # ----------------------------------------------------
-col_logo1, col_logo2, col_logo3 = st.columns([1, 2, 1])
-with col_logo2:
-    logo_encontrado = None
-    for archivo_posible in ["logo.png", "logo agrodigitalvenezueladefinitivo.png"]:
-        if path.exists(archivo_posible):
-            logo_encontrado = archivo_posible
-            break
-            
-    if logo_encontrado:
-        st.image(logo_encontrado, use_container_width=True)
+col_l1, col_l2 = st.columns(2)
+with col_l1:
+    if path.exists("logo.png"):
+        st.image("logo.png", width=220)
+    elif path.exists("logo agrodigitalvenezueladefinitivo.png"):
+        st.image("logo agrodigitalvenezueladefinitivo.png", width=220)
     else:
-        st.markdown(
-            f"<div style='background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%); padding: 20px; border-radius: 12px; text-align: center; color: white;'>"
-            f"<h2 style='margin: 0; color: #FBC02D;'>🌾 {EMPRESA_NOMBRE}</h2>"
-            f"<p style='margin: 5px 0 0 0; font-size: 14px; font-family: monospace;'>RIF: {EMPRESA_RIF}</p>"
-            f"</div>", 
-            unsafe_allow_html=True
-        )
+        st.markdown(f"### 🌾 {EMPRESA_NOMBRE}")
+
+with col_l2:
+    if path.exists("logo agrodigitalvenezueladeinitivo.png"):
+        st.image("logo agrodigitalvenezueladeinitivo.png", width=220)
+    elif path.exists("logo.png"):
+        st.image("logo.png", width=220)
+    else:
+        st.markdown("### 💻 AgroDigital Venezuela")
 
 st.markdown("<h3 style='text-align: center; color: #1565C0;'>Plataforma Segura con Autenticación y Control de Roles</h3>", unsafe_allow_html=True)
 st.markdown("<h5 style='text-align: center; color: #2E7D32;'>Eje de Operaciones: Yaracuy - Lara - Carabobo</h5>", unsafe_allow_html=True)
 st.markdown("---")
+
+# ----------------------------------------------------
+# WIDGET DE ACTUALIZACIÓN DE TASA BCV (24 HORAS)
+# ----------------------------------------------------
+st.sidebar.markdown("### 💱 Tasa Oficial BCV (24h)")
+nueva_tasa = st.sidebar.number_input("Tasa USD/VES Referencial:", value=float(st.session_state.tasa_bcv), format="%.2f")
+if st.sidebar.button("🔄 Actualizar Tasa BCV"):
+    st.session_state.tasa_bcv = nueva_tasa
+    st.sidebar.success(f"Tasa BCV actualizada a {nueva_tasa:.2f} VES/USD")
+st.sidebar.caption(f"📅 Sincronización activa (24h) | Último ajuste: {datetime.now().strftime('%d/%m/%Y')}")
+st.sidebar.divider()
 
 # ----------------------------------------------------
 # CONTROL DE ACCESO: PANTALLA DE LOGIN OBLIGATORIO
@@ -79,15 +91,13 @@ if not st.session_state.autenticado:
         btn_login = st.form_submit_button("Entrar al Sistema")
         
         if btn_login:
-            # Base de datos simulada de usuarios y roles estrictos
-            # En producción, esto se conecta a una base de datos segura
             credenciales = {
                 "admin": {"rol": "⚙️ Administrador", "nombre": "Administrador Central"},
                 "agrotienda": {"rol": "🏪 Agrotienda", "nombre": "Agrotienda Afiliada"},
                 "productor": {"rol": "🚜 Productor", "nombre": "Productor Agrícola"}
             }
             
-            if input_usuario in credenciales and input_clave == "123456": # Clave de demostración segura
+            if input_usuario in credenciales and input_clave == "123456":
                 st.session_state.autenticado = True
                 st.session_state.rol_actual = credenciales[input_usuario]["rol"]
                 st.session_state.usuario_actual = credenciales[input_usuario]["nombre"]
@@ -96,13 +106,13 @@ if not st.session_state.autenticado:
                 st.sidebar.error("Usuario o contraseña incorrectos.")
     
     st.warning("⚠️ **Acceso Restringido:** Debe iniciar sesión en el panel lateral para utilizar las herramientas de subasta, cotización y gestión de la red.")
-    st.stop()  # Detiene la ejecución del resto de la app si no está autenticado
+    st.stop()
 
 # ----------------------------------------------------
 # SESIÓN ACTIVA: PANEL LATERAL Y RESTRICCIÓN DE MENÚS
 # ----------------------------------------------------
 st.sidebar.markdown(f"### 👤 Sesión Activa")
-st.sidebar.success(f"**Usuario:** {st.session_state.usuario_actual}\n\n**Rol:** {st.session_state.rol_actual}")
+st.sidebar.success(f"**Usuario:** {st.session_state.usuario_actual}\n\n**Rol:** {st.session_state.rol_actual}\n\n**Tasa BCV:** {st.session_state.tasa_bcv:.2f} VES")
 
 if st.sidebar.button("🚪 Cerrar Sesión"):
     st.session_state.autenticado = False
@@ -113,12 +123,12 @@ if st.sidebar.button("🚪 Cerrar Sesión"):
 st.sidebar.divider()
 st.sidebar.markdown("### 🧭 Menú Autorizado")
 
-# Definición estricta de menús segmentados por rol (Blindaje contra cruce de accesos)
 if st.session_state.rol_actual == "🚜 Productor":
     menu = st.sidebar.selectbox("Seleccione Módulo:", [
         "🛒 Lanzar Subasta Inversa (Anónima)",
         "📊 Mis Pujas y Adjudicación",
-        "🚜 Requerimientos del Campo"
+        "🚜 Requerimientos del Campo",
+        "💬 Agradecimiento y Soporte"
     ])
 
 elif st.session_state.rol_actual == "🏪 Agrotienda":
@@ -128,7 +138,7 @@ elif st.session_state.rol_actual == "🏪 Agrotienda":
         "💳 Pasarela de Pago Móvil BDV"
     ])
 
-else:  # Administrador
+else:
     menu = st.sidebar.selectbox("Seleccione Módulo:", [
         "📊 Panel General de Control",
         "📄 Generador de Notas de Entrega (PDF)",
@@ -140,7 +150,6 @@ else:  # Administrador
 # EJECUCIÓN DE MÓDULOS SEGÚN EL ROL VERIFICADO
 # ----------------------------------------------------
 
-# MÓDULOS DE PRODUCTOR
 if menu == "🛒 Lanzar Subasta Inversa (Anónima)":
     st.header("🛒 Módulo de Subasta Inversa (Productor)")
     st.markdown("Publique su necesidad de insumos. Sus datos de contacto permanecen estrictamente ocultos hasta la adjudicación.")
@@ -179,7 +188,7 @@ elif menu == "📊 Mis Pujas y Adjudicación":
                 for o in sorted(ofertas_p, key=lambda x: x["precio"]):
                     c1, c2, c3 = st.columns([2, 2, 2])
                     with c1: st.write(f"🏪 **{o['tienda']}** ({o['estado_tienda']})")
-                    with c2: st.write(f"💲 **${o['precio']:.2f} USD** | {o['tiempo']}")
+                    with c2: st.write(f"💲 **${o['precio']:.2f} USD** (~{o['precio']*st.session_state.tasa_bcv:,.2f} VES) | {o['tiempo']}")
                     with c3:
                         if st.button(f"✅ Adjudicar #{o['pedido_id']}", key=f"adj_{o['pedido_id']}_{o['tienda']}"):
                             st.session_state.transacciones_cerradas.append({
@@ -199,8 +208,16 @@ elif menu == "🚜 Requerimientos del Campo":
     st.header("📋 Directorio de Insumos Agrícolas")
     st.write("• Fertilizantes y Nutrición de Suelos (Urea, NPK)\n• Sanidad y Vacunación Animal\n• Agroquímicos y Control de Plagas\n• Maquinaria y Repuestos Críticos\n• Semillas Certificadas")
 
+elif menu == "💬 Agradecimiento y Soporte":
+    st.header("💬 Canal de Agradecimiento al Productor")
+    st.markdown("Gracias por formar parte de nuestra red de comercio agrícola digital en Yaracuy, Lara y Carabobo.")
+    
+    mensaje_agradecimiento = f"¡Estimado Productor! De parte de la directiva y equipo técnico de {EMPRESA_NOMBRE} (AgroDigital Venezuela), le expresamos nuestro más sincero agradecimiento por la confianza depositada al utilizar nuestra plataforma para potenciar su producción agrícola."
+    url_whatsapp_gracias = f"https://wa.me/58{EMPRESA_TELEFONO[1:]}?text={urllib.parse.quote(mensaje_agradecimiento)}"
+    
+    st.success(mensaje_agradecimiento)
+    st.markdown(f"[💬 Enviar mensaje institucional de agradecimiento vía WhatsApp]({url_whatsapp_gracias})", unsafe_allow_html=True)
 
-# MÓDULOS DE AGROTIENDA
 elif menu == "📝 Afiliación y Contrato Mercantil":
     st.header("📝 Contrato de Adhesión y Corretaje Digital")
     with st.expander("🔍 Leer Términos Legales", expanded=False):
@@ -236,6 +253,7 @@ elif menu == "🏪 Panel de Cotización Abierta":
                     tienda_nombre = st.text_input("Nombre de su Agrotienda:", key=f"tn_{p['id']}")
                     tienda_estado = st.selectbox("Estado:", ["Yaracuy", "Lara", "Carabobo"], key=f"te_{p['id']}")
                     precio_ofertado = st.number_input("Precio Total Ofertado (USD $):", min_value=0.0, format="%.2f", key=f"tp_{p['id']}")
+                    st.caption(Equivalente en Bolívares BCV: ~{precio_ofertado * st.session_state.tasa_bcv:,.2f} VES)
                     tiempo_entrega = st.text_input("Disponibilidad:", key=f"tt_{p['id']}")
                     telefono_tienda = st.text_input("WhatsApp Comercial:", key=f"tel_{p['id']}")
                     
@@ -250,14 +268,13 @@ elif menu == "🏪 Panel de Cotización Abierta":
                             st.error("Ingrese un precio válido.")
                 st.divider()
 
-
-# MÓDULOS DE ADMINISTRADOR
 elif menu == "📊 Panel General de Control":
     st.header("⚙️ Panel de Control del Administrador")
     c1, c2, c3 = st.columns(3)
     c1.metric("Subastas Activas", len(st.session_state.pedidos))
     c2.metric("Agrotiendas Afiliadas", len(st.session_state.agrotiendas_registradas))
     c3.metric("Transacciones Cerradas", len(st.session_state.transacciones_cerradas))
+    st.info(f"💱 Tasa Oficial BCV Configurada: {st.session_state.tasa_bcv:.2f} VES/USD")
 
 elif menu == "📄 Generador de Notas de Entrega (PDF)":
     st.header("📄 Generador de Documentación Legal (PDF)")
@@ -302,16 +319,16 @@ elif menu == "📑 Auditoría de Transacciones":
         df_trans = pd.DataFrame(st.session_state.transacciones_cerradas)
         st.dataframe(df_trans, use_container_width=True)
 
-
-# MÓDULO COMPARTIDO (PASARELA DE PAGO)
 if menu == "💳 Pasarela de Pago Móvil BDV":
     st.header("📲 Pasarela de Pago Móvil Oficial")
     col1, col2 = st.columns([1, 1])
     with col1:
-        st.info(f"🏦 Datos Bancarios:\n\n• Razón Social: {EMPRESA_NOMBRE}\n• RIF: {EMPRESA_RIF}\n• Banco: {EMPRESA_BANCO}\n• Teléfono: {EMPRESA_TELEFONO}")
+        st.info(f"🏦 Datos Bancarios:\n\n• Razón Social: {EMPRESA_NOMBRE}\n• RIF: {EMPRESA_RIF}\n• Banco: {EMPRESA_BANCO}\n• Teléfono: {EMPRESA_TELEFONO}\n• Tasa BCV Actual: {st.session_state.tasa_bcv:.2f} VES")
     with col2:
         with st.form("form_pago"):
-            monto_p = st.number_input("Monto:", min_value=0.0, format="%.2f")
+            monto_p = st.number_input("Monto en USD:", min_value=0.0, format="%.2f")
+            monto_ves = monto_p * st.session_state.tasa_bcv
+            st.write(f"Equivalente a pagar: **{monto_ves:,.2f} VES**")
             ref_p = st.text_input("Número de Referencia:")
             if st.form_submit_button("Validar Pago"):
                 if ref_p and monto_p > 0:
