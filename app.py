@@ -46,7 +46,7 @@ if "usuario_actual" not in st.session_state:
 col_logo1, col_logo2, col_logo3 = st.columns([1, 2, 1])
 with col_logo2:
     logo_encontrado = None
-    for archivo_posible in ["logo.jpg", "logo.JPG", "logo.png", "LOGO.jpg", "LOGO.png"]:
+    for archivo_posible in ["logo.png", "logo agrodigitalvenezueladefinitivo.png"]:
         if path.exists(archivo_posible):
             logo_encontrado = archivo_posible
             break
