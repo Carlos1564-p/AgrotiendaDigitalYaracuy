@@ -44,7 +44,38 @@ if "rol_actual" not in st.session_state:
     st.session_state.rol_actual = None
 if "usuario_actual" not in st.session_state:
     st.session_state.usuario_actual = ""
+# ----------------------------------------------------
+# VISTA PRINCIPAL: RESEÑA Y OBJETIVOS DEL NEGOCIO
+# ----------------------------------------------------
+st.markdown("---")
+st.markdown("<h2 style='text-align: center; color: #1565C0;'>🌾 AgroYaracuy & Región</h2>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: center; color: #2E7D32;'>El Mercado Digital que Conecta al Campo con la Agrotienda</h4>", unsafe_allow_html=True)
 
+with st.container():
+    st.info(
+        "💡 **Nuestro Objetivo:** Eliminar la intermediación costosa y conectar de forma transparente "
+        "a los productores agrícolas de Yaracuy, Lara y Carabobo con las agrotiendas de la región mediante subastas en tiempo real."
+    )
+    
+    col_prod, col_tienda = st.columns(2)
+    
+    with col_prod:
+        st.markdown(
+            "### 🚜 Para el Productor\n"
+            "• **Ahorro de Tiempo y Dinero:** Consigue el mejor precio de insumos sin salir de tu finca.\n"
+            "• **Subasta Anónima:** Tu identidad y teléfono están protegidos hasta que decidas comprar.\n"
+            "• **Acceso Gratuito:** Publica tus requerimientos sin costo alguno."
+        )
+        
+    with col_tienda:
+        st.markdown(
+            "### 🏪 Para la Agrotienda\n"
+            "• **Clientes Directos:** Recibe solicitudes de compra reales todos los días.\n"
+            "• **Mayor Rotación:** Vende tu inventario de fertilizantes, semillas y repuestos rápidamente.\n"
+            "• **Respaldo Legal:** Transacciones protegidas por contrato mercantil y pasarela oficial."
+        )
+
+st.markdown("---")
 # ----------------------------------------------------
 # SECCIÓN CORPORATIVA: DOBLE LOGOTIPO ENCABEZADO
 # ----------------------------------------------------
