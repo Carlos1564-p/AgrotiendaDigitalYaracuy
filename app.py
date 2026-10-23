@@ -50,8 +50,8 @@ col_l1, col_l2 = st.columns(2)
 with col_l1:
     if path.exists("logo.png"):
         st.image("logo.png", width=220)
-    elif path.exists("logo agrodigitalvenezueladefinitivo.png"):
-        st.image("logo agrodigitalvenezueladedefinitivo.png", width=220)
+    elif path.exists("logo agrodigitalvenezueladeinitivo.png"):
+        st.image("logo agrodigitalvenezueladeinitivo.png", width=220)
     else:
         st.markdown(f"### 🌾 {EMPRESA_NOMBRE}")
 
@@ -66,17 +66,6 @@ with col_l2:
 st.markdown("<h3 style='text-align: center; color: #1565C0;'>Plataforma Segura con Autenticación y Control de Roles</h3>", unsafe_allow_html=True)
 st.markdown("<h5 style='text-align: center; color: #2E7D32;'>Eje de Operaciones: Yaracuy - Lara - Carabobo</h5>", unsafe_allow_html=True)
 st.markdown("---")
-
-# ----------------------------------------------------
-# WIDGET DE ACTUALIZACIÓN DE TASA BCV (24 HORAS)
-# ----------------------------------------------------
-st.sidebar.markdown("### 💱 Tasa Oficial BCV (24h)")
-nueva_tasa = st.sidebar.number_input("Tasa USD/VES Referencial:", value=float(st.session_state.tasa_bcv), format="%.2f")
-if st.sidebar.button("🔄 Actualizar Tasa BCV"):
-    st.session_state.tasa_bcv = nueva_tasa
-    st.sidebar.success(f"Tasa BCV actualizada a {nueva_tasa:.2f} VES/USD")
-st.sidebar.caption(f"📅 Sincronización activa (24h) | Último ajuste: {datetime.now().strftime('%d/%m/%Y')}")
-st.sidebar.divider()
 
 # ----------------------------------------------------
 # CONTROL DE ACCESO: PANTALLA DE LOGIN OBLIGATORIO
@@ -127,8 +116,8 @@ if st.session_state.rol_actual == "🚜 Productor":
     menu = st.sidebar.selectbox("Seleccione Módulo:", [
         "🛒 Lanzar Subasta Inversa (Anónima)",
         "📊 Mis Pujas y Adjudicación",
-        "🚜 Requerimientos del Campo",
-        "💬 Agradecimiento y Soporte"
+        "💳 Pagar Producto Adquirido",
+        "🚜 Requerimientos del Campo"
     ])
 
 elif st.session_state.rol_actual == "🏪 Agrotienda":
@@ -138,18 +127,20 @@ elif st.session_state.rol_actual == "🏪 Agrotienda":
         "💳 Pasarela de Pago Móvil BDV"
     ])
 
-else:
+else: # Administrador
     menu = st.sidebar.selectbox("Seleccione Módulo:", [
-        "📊 Panel General de Control",
+        "📊 Panel General y Tasa BCV (24h)",
+        "💬 Gestión de Agradecimiento",
         "📄 Generador de Notas de Entrega (PDF)",
         "📑 Auditoría de Transacciones",
-        "💳 Pasarela de Pago Móvil BDV"
+        "💳 Pasarela de Pago General BDV"
     ])
 
 # ----------------------------------------------------
 # EJECUCIÓN DE MÓDULOS SEGÚN EL ROL VERIFICADO
 # ----------------------------------------------------
 
+# --- MÓDULOS DE PRODUCTOR ---
 if menu == "🛒 Lanzar Subasta Inversa (Anónima)":
     st.header("🛒 Módulo de Subasta Inversa (Productor)")
     st.markdown("Publique su necesidad de insumos. Sus datos de contacto permanecen estrictamente ocultos hasta la adjudicación.")
@@ -198,26 +189,47 @@ elif menu == "📊 Mis Pujas y Adjudicación":
                                 "insumo": p['insumo'], "cantidad": p['cantidad'], "precio": o['precio'],
                                 "zona": f"{p['estado']} - {p['municipio']}"
                             })
-                            st.success("¡Adjudicación exitosa! Contacto desbloqueado.")
+                            st.success("¡Adjudicación exitosa! Ya puede proceder al pago en su sección correspondiente.")
                             msg = f"Hola {o['tienda']}, he adjudicado su oferta de ${o['precio']:.2f} en {EMPRESA_NOMBRE}."
                             url_wa = f"https://wa.me/58{o['telefono_tienda'][-10:]}?text={urllib.parse.quote(msg)}"
                             st.markdown(f"[💬 Contactar vía WhatsApp]({url_wa})", unsafe_allow_html=True)
             st.divider()
 
+elif menu == "💳 Pagar Producto Adquirido":
+    st.header("💳 Pasarela de Pago del Producto Adquirido")
+    st.markdown("Realice el pago de los insumos que ha decidido adquirir tras ganar o adjudicar la subasta en la red.")
+    
+    if not st.session_state.transacciones_cerradas:
+        st.info("No tiene transacciones adjudicadas pendientes de pago actualmente.")
+    else:
+        for t in st.session_state.transacciones_cerradas:
+            monto_ves_prod = t['precio'] * st.session_state.tasa_bcv
+            with st.container():
+                st.markdown(f"### 📦 Transacción Adjudicada #{t['id_transaccion']} - Insumo: {t['insumo']} ({t['cantidad']})")
+                st.write(f"🏪 **Agrotienda Proveedora:** {t['tienda']} | 💲 **Monto USD:** ${t['precio']:.2f}")
+                st.info(f"💱 **Monto equivalente en Bolívares (Tasa BCV {st.session_state.tasa_bcv:.2f}):** **{monto_ves_prod:,.2f} VES**")
+                
+                with st.form(f"form_pago_prod_{t['id_transaccion']}"):
+                    st.markdown(f"🏦 **Datos de Pago Móvil BDV:** {EMPRESA_BANCO} | Teléfono: {EMPRESA_TELEFONO} | RIF: {EMPRESA_RIF}")
+                    ref_pago_prod = st.text_input("Número de Referencia Bancaria (Pago Móvil):", key=f"ref_{t['id_transaccion']}")
+                    banco_origen_prod = st.text_input("Banco de Origen:", key=f"banco_{t['id_transaccion']}")
+                    
+                    if st.form_submit_button("Confirmar Pago del Insumo"):
+                        if ref_pago_prod:
+                            st.success("¡Pago reportado con éxito al administrador y a la agrotienda!")
+                            msg_pago_prod = f"Hola {t['tienda']}, he pagado el insumo {t['insumo']} por ${t['precio']:.2f} ({monto_ves_prod:,.2f} VES). Ref: {ref_pago_prod}."
+                            url_wa_pago = f"https://wa.me/58{t['telefono_tienda'][-10:]}?text={urllib.parse.quote(msg_pago_prod)}"
+                            st.markdown(f"[📲 Notificar Pago a la Agrotienda vía WhatsApp]({url_wa_pago})", unsafe_allow_html=True)
+                        else:
+                            st.error("Por favor ingrese el número de referencia bancaria.")
+                st.divider()
+
 elif menu == "🚜 Requerimientos del Campo":
     st.header("📋 Directorio de Insumos Agrícolas")
     st.write("• Fertilizantes y Nutrición de Suelos (Urea, NPK)\n• Sanidad y Vacunación Animal\n• Agroquímicos y Control de Plagas\n• Maquinaria y Repuestos Críticos\n• Semillas Certificadas")
 
-elif menu == "💬 Agradecimiento y Soporte":
-    st.header("💬 Canal de Agradecimiento al Productor")
-    st.markdown("Gracias por formar parte de nossa red de comercio agrícola digital en Yaracuy, Lara y Carabobo.")
-    
-    mensaje_agradecimiento = f"¡Estimado Productor! De parte de la directiva y equipo técnico de {EMPRESA_NOMBRE} (AgroDigital Venezuela), le expresamos nuestro más sincero agradecimiento por la confianza depositada al utilizar nuestra plataforma para potenciar su producción agrícola."
-    url_whatsapp_gracias = f"https://wa.me/58{EMPRESA_TELEFONO[1:]}?text={urllib.parse.quote(mensaje_agradecimiento)}"
-    
-    st.success(mensaje_agradecimiento)
-    st.markdown(f"[💬 Enviar mensaje institucional de agradecimiento vía WhatsApp]({url_whatsapp_gracias})", unsafe_allow_html=True)
 
+# --- MÓDULOS DE AGROTIENDA ---
 elif menu == "📝 Afiliación y Contrato Mercantil":
     st.header("📝 Contrato de Adhesión y Corretaje Digital")
     with st.expander("🔍 Leer Términos Legales", expanded=False):
@@ -268,13 +280,42 @@ elif menu == "🏪 Panel de Cotización Abierta":
                             st.error("Ingrese un precio válido.")
                 st.divider()
 
-elif menu == "📊 Panel General de Control":
-    st.header("⚙️ Panel de Control del Administrador")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Subastas Activas", len(st.session_state.pedidos))
-    c2.metric("Agrotiendas Afiliadas", len(st.session_state.agrotiendas_registradas))
-    c3.metric("Transacciones Cerradas", len(st.session_state.transacciones_cerradas))
-    st.info(f"💱 Tasa Oficial BCV Configurada: {st.session_state.tasa_bcv:.2f} VES/USD")
+
+# --- MÓDULOS DE ADMINISTRADOR ---
+elif menu == "📊 Panel General y Tasa BCV (24h)":
+    st.header("⚙️ Panel de Control del Administrador y Tasas BCV")
+    
+    col_adm1, col_adm2 = st.columns(2)
+    with col_adm1:
+        st.subheader("💱 Actualizador de Tasa BCV (24h)")
+        nueva_tasa = st.number_input("Modificar Tasa USD/VES Referencial:", value=float(st.session_state.tasa_bcv), format="%.2f")
+        if st.button("🔄 Guardar y Actualizar Tasa BCV"):
+            st.session_state.tasa_bcv = nueva_tasa
+            st.success(f"¡Tasa BCV actualizada a {nueva_tasa:.2f} VES/USD con vigencia de 24h!")
+        st.caption(f"📅 Última sincronización registrada: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+        
+    with col_adm2:
+        st.subheader("📈 Resumen del Ecosistema")
+        st.metric("Subastas Activas", len(st.session_state.pedidos))
+        st.metric("Agrotiendas Afiliadas", len(st.session_state.agrotiendas_registradas))
+        st.metric("Transacciones Cerradas", len(st.session_state.transacciones_cerradas))
+
+elif menu == "💬 Gestión de Agradecimiento":
+    st.header("💬 Gestión de Agradecimiento a Productores")
+    st.markdown("Herramienta administrativa para enviar mensajes de agradecimiento institucional por WhatsApp a los productores de la red.")
+    
+    with st.form("form_agradecimiento_admin"):
+        prod_telf_adm = st.text_input("Teléfono WhatsApp del Productor (Ej: 04121234567):")
+        prod_nombre_adm = st.text_input("Nombre del Productor / Finca:")
+        
+        if st.form_submit_button("Generar Enlace de Agradecimiento"):
+            if prod_telf_adm and prod_nombre_adm:
+                msg_agradecimiento_adm = f"¡Estimado(a) {prod_nombre_adm}! De parte de la directiva y equipo técnico de {EMPRESA_NOMBRE} (AgroDigital Venezuela), le expresamos nuestro más sincero agradecimiento por la confianza depositada al utilizar nuestra plataforma para potenciar su producción agrícola en la región."
+                url_wa_adm = f"https://wa.me/58{prod_telf_adm[-10:]}?text={urllib.parse.quote(msg_agradecimiento_adm)}"
+                st.success("¡Enlace generado exitosamente!")
+                st.markdown(f"[💬 Enviar mensaje de agradecimiento vía WhatsApp]({url_wa_adm})", unsafe_allow_html=True)
+            else:
+                st.error("Por favor complete el teléfono y el nombre del productor.")
 
 elif menu == "📄 Generador de Notas de Entrega (PDF)":
     st.header("📄 Generador de Documentación Legal (PDF)")
@@ -319,13 +360,13 @@ elif menu == "📑 Auditoría de Transacciones":
         df_trans = pd.DataFrame(st.session_state.transacciones_cerradas)
         st.dataframe(df_trans, use_container_width=True)
 
-if menu == "💳 Pasarela de Pago Móvil BDV":
-    st.header("📲 Pasarela de Pago Móvil Oficial")
+if menu == "💳 Pasarela de Pago General BDV":
+    st.header("📲 Pasarela de Pago Móvil Oficial (General)")
     col1, col2 = st.columns([1, 1])
     with col1:
         st.info(f"🏦 Datos Bancarios:\n\n• Razón Social: {EMPRESA_NOMBRE}\n• RIF: {EMPRESA_RIF}\n• Banco: {EMPRESA_BANCO}\n• Teléfono: {EMPRESA_TELEFONO}\n• Tasa BCV Actual: {st.session_state.tasa_bcv:.2f} VES")
     with col2:
-        with st.form("form_pago"):
+        with st.form("form_pago_gen"):
             monto_p = st.number_input("Monto en USD:", min_value=0.0, format="%.2f")
             monto_ves = monto_p * st.session_state.tasa_bcv
             st.write(f"Equivalente a pagar: **{monto_ves:,.2f} VES**")
