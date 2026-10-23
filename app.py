@@ -51,7 +51,7 @@ with col_l1:
     if path.exists("logo.png"):
         st.image("logo.png", width=220)
     elif path.exists("logo agrodigitalvenezueladefinitivo.png"):
-        st.image("logo agrodigitalvenezueladefinitivo.png", width=220)
+        st.image("logo agrodigitalvenezueladedefinitivo.png", width=220)
     else:
         st.markdown(f"### 🌾 {EMPRESA_NOMBRE}")
 
@@ -210,7 +210,7 @@ elif menu == "🚜 Requerimientos del Campo":
 
 elif menu == "💬 Agradecimiento y Soporte":
     st.header("💬 Canal de Agradecimiento al Productor")
-    st.markdown("Gracias por formar parte de nuestra red de comercio agrícola digital en Yaracuy, Lara y Carabobo.")
+    st.markdown("Gracias por formar parte de nossa red de comercio agrícola digital en Yaracuy, Lara y Carabobo.")
     
     mensaje_agradecimiento = f"¡Estimado Productor! De parte de la directiva y equipo técnico de {EMPRESA_NOMBRE} (AgroDigital Venezuela), le expresamos nuestro más sincero agradecimiento por la confianza depositada al utilizar nuestra plataforma para potenciar su producción agrícola."
     url_whatsapp_gracias = f"https://wa.me/58{EMPRESA_TELEFONO[1:]}?text={urllib.parse.quote(mensaje_agradecimiento)}"
@@ -253,7 +253,7 @@ elif menu == "🏪 Panel de Cotización Abierta":
                     tienda_nombre = st.text_input("Nombre de su Agrotienda:", key=f"tn_{p['id']}")
                     tienda_estado = st.selectbox("Estado:", ["Yaracuy", "Lara", "Carabobo"], key=f"te_{p['id']}")
                     precio_ofertado = st.number_input("Precio Total Ofertado (USD $):", min_value=0.0, format="%.2f", key=f"tp_{p['id']}")
-                    st.caption(Equivalente en Bolívares BCV: ~{precio_ofertado * st.session_state.tasa_bcv:,.2f} VES)
+                    st.caption(f"Equivalente en Bolívares BCV: ~{precio_ofertado * st.session_state.tasa_bcv:,.2f} VES")
                     tiempo_entrega = st.text_input("Disponibilidad:", key=f"tt_{p['id']}")
                     telefono_tienda = st.text_input("WhatsApp Comercial:", key=f"tel_{p['id']}")
                     
