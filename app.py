@@ -35,6 +35,8 @@ if "agrotiendas_registradas" not in st.session_state:
     ]
 if "transacciones_cerradas" not in st.session_state:
     st.session_state.transacciones_cerradas = []
+if "pagos_agrotiendas" not in st.session_state:
+    st.session_state.pagos_agrotiendas = []
 
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
@@ -130,9 +132,10 @@ elif st.session_state.rol_actual == "🏪 Agrotienda":
 else: # Administrador
     menu = st.sidebar.selectbox("Seleccione Módulo:", [
         "📊 Panel General y Tasa BCV (24h)",
+        "📑 Auditoría Detallada de Transacciones",
+        "💸 Liquidación y Pagos a Agrotiendas",
         "💬 Gestión de Agradecimiento",
         "📄 Generador de Notas de Entrega (PDF)",
-        "📑 Auditoría de Transacciones",
         "💳 Pasarela de Pago General BDV"
     ])
 
@@ -300,6 +303,75 @@ elif menu == "📊 Panel General y Tasa BCV (24h)":
         st.metric("Agrotiendas Afiliadas", len(st.session_state.agrotiendas_registradas))
         st.metric("Transacciones Cerradas", len(st.session_state.transacciones_cerradas))
 
+elif menu == "📑 Auditoría Detallada de Transacciones":
+    st.header("📑 Auditoría Detallada de Transacciones Cerradas")
+    st.markdown("Visualice con precisión el productor adjudicatario, la agrotienda proveedora, el producto y la oferta de precio pujado.")
+    
+    if not st.session_state.transacciones_cerradas:
+        st.info("No hay transacciones cerradas registradas actualmente en el sistema.")
+    else:
+        for t in st.session_state.transacciones_cerradas:
+            monto_ves_audit = t['precio'] * st.session_state.tasa_bcv
+            with st.container():
+                st.markdown(f"### 📋 Transacción ID #{t['id_transaccion']}")
+                col_a, col_b, col_c = st.columns(3)
+                with col_a:
+                    st.write(f"**🚜 Productor:** {t['productor']}")
+                    st.caption(f"Telf: {t['telefono_productor']}")
+                with col_b:
+                    st.write(f"**🏪 Agrotienda:** {t['tienda']}")
+                    st.caption(f"Telf: {t['telefono_tienda']}")
+                with col_c:
+                    st.write(f"**📦 Producto / Insumo:** {t['insumo']}")
+                    st.caption(f"Cantidad: {t['cantidad']}")
+                
+                st.markdown(f"💲 **Precio Pujado / Ofertado:** **${t['precio']:.2f} USD** (~{monto_ves_audit:,.2f} VES a Tasa BCV)")
+                st.write(f"📍 **Zona Regional:** {t['zona']}")
+                st.divider()
+
+elif menu == "💸 Liquidación y Pagos a Agrotiendas":
+    st.header("💸 Módulo de Liquidación y Pago a Agrotiendas")
+    st.markdown("Calcule el margen de corretaje contractual de la empresa y procese la transferencia neta a la agrotienda.")
+    
+    if not st.session_state.transacciones_cerradas:
+        st.info("No hay transacciones cerradas para liquidar.")
+    else:
+        # Porcentaje de comisión por defecto establecido en el contrato (ej. 3%)
+        comision_porcentaje = st.slider("Margen / Comisión de Corretaje de la Empresa (%):", min_value=1.0, max_value=10.0, value=3.0, step=0.5)
+        
+        st.divider()
+        for t in st.session_state.transacciones_cerradas:
+            monto_total_usd = t['precio']
+            comision_empresa_usd = monto_total_usd * (comision_porcentaje / 100.0)
+            monto_neto_agrotienda_usd = monto_total_usd - comision_empresa_usd
+            
+            monto_neto_ves = monto_neto_agrotienda_usd * st.session_state.tasa_bcv
+            
+            with st.container():
+                st.markdown(f"### 🧾 Liquidación Transacción #{t['id_transaccion']} - Agrotienda: {t['tienda']}")
+                st.write(f"• **Insumo:** {t['insumo']} ({t['cantidad']}) | **Productor:** {t['productor']}")
+                st.write(f"• **Monto Ofertado Total:** ${monto_total_usd:.2f} USD")
+                st.write(f"• **Margen de la Empresa ({comision_porcentaje}%):** ${comision_empresa_usd:.2f} USD")
+                st.success(f"💰 **Monto Neto a Pagar a la Agrotienda:** **${monto_neto_agrotienda_usd:.2f} USD** (~{monto_neto_ves:,.2f} VES)")
+                
+                with st.form(f"form_liq_{t['id_transaccion']}"):
+                    ref_pago_agro = st.text_input("Número de Referencia de Pago a la Agrotienda:")
+                    banco_destino_agro = st.text_input("Banco de Destino de la Agrotienda:")
+                    
+                    if st.form_submit_button("Registrar Liquidación y Pago"):
+                        if ref_pago_agro:
+                            st.session_state.pagos_agrotiendas.append({
+                                "id_transaccion": t['id_transaccion'],
+                                "agrotienda": t['tienda'],
+                                "monto_neto_usd": monto_neto_agrotienda_usd,
+                                "referencia": ref_pago_agro,
+                                "fecha": datetime.now().strftime('%d/%m/%Y %H:%M')
+                            })
+                            st.success(f"¡Pago a la agrotienda {t['tienda']} registrado con éxito en la contabilidad!")
+                        else:
+                            st.error("Ingrese el número de referencia de la transferencia.")
+                st.divider()
+
 elif menu == "💬 Gestión de Agradecimiento":
     st.header("💬 Gestión de Agradecimiento a Productores")
     st.markdown("Herramienta administrativa para enviar mensajes de agradecimiento institucional por WhatsApp a los productores de la red.")
@@ -323,7 +395,7 @@ elif menu == "📄 Generador de Notas de Entrega (PDF)":
         st.info("No hay transacciones cerradas para certificar.")
     else:
         for t in st.session_state.transacciones_cerradas:
-            st.markdown(f"**Transacción #{t['id_transaccion']}** | {t['productor']} ➔ {t['tienda']} (${t['precio']:.2f} USD)")
+            st.markdown(f"**Transacción #{t['id_transaccion']}** | Productor: {t['productor']} ➔ Agrotienda: {t['tienda']} (${t['precio']:.2f} USD)")
             if st.button(f"📥 Descargar PDF #{t['id_transaccion']}", key=f"pdf_gen_{t['id_transaccion']}"):
                 class PDF(FPDF):
                     def header(self):
