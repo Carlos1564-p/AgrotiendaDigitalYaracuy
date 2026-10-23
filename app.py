@@ -19,7 +19,7 @@ EMPRESA_BANCO = "Banco de Venezuela (0102)"
 EMPRESA_TELEFONO = "04120582064"
 
 # ----------------------------------------------------
-# INICIALIZACIÓN DE ESTADOS GLOBALES Y TASA BCV
+# INICIALIZACIÓN DE ESTADOS GLOBALES
 # ----------------------------------------------------
 if "tasa_bcv" not in st.session_state:
     st.session_state.tasa_bcv = 36.50
@@ -32,6 +32,13 @@ if "agrotiendas_registradas" not in st.session_state:
         {"nombre": "Agroinsumos San Felipe C.A.", "estado": "Yaracuy", "municipio": "San Felipe", "telefono": "584121234567"},
         {"nombre": "Agrotienda El Semillero Barquisimeto", "estado": "Lara", "municipio": "Iribarren", "telefono": "584149876543"},
         {"nombre": "Distribuidora Agropecuaria Carabobo", "estado": "Carabobo", "municipio": "Valencia", "telefono": "584167654321"}
+    ]
+if "catalogo_productos" not in st.session_state:
+    st.session_state.catalogo_productos = [
+        {"producto": "Urea 46% Granulada (Saco 50kg)", "categoria": "Fertilizantes", "precio_ref": 35.0},
+        {"producto": "NPK 12-24-12 (Saco 50kg)", "categoria": "Fertilizantes", "precio_ref": 42.0},
+        {"producto": "Semilla de Maíz Blanco Certificada", "categoria": "Semillas", "precio_ref": 120.0},
+        {"producto": "Vacuna Fiebre Aftosa (Dosis)", "categoria": "Sanidad Animal", "precio_ref": 2.5}
     ]
 if "transacciones_cerradas" not in st.session_state:
     st.session_state.transacciones_cerradas = []
@@ -46,7 +53,7 @@ if "usuario_actual" not in st.session_state:
     st.session_state.usuario_actual = ""
 
 # ----------------------------------------------------
-# SECCIÓN CORPORATIVA: DOBLE LOGOTIPO ENCABEZADO
+# SECCIÓN CORPORATIVA: ENCABEZADO Y LOGOS
 # ----------------------------------------------------
 col_l1, col_l2 = st.columns(2)
 with col_l1:
@@ -69,7 +76,7 @@ st.markdown("<h3 style='text-align: center; color: #1565C0;'>Plataforma Segura c
 st.markdown("<h5 style='text-align: center; color: #2E7D32;'>Eje de Operaciones: Yaracuy - Lara - Carabobo</h5>", unsafe_allow_html=True)
 
 # ----------------------------------------------------
-# VISTA PRINCIPAL: RESEÑA Y OBJETIVOS DEL NEGOCIO
+# VISTA PRINCIPAL: OBJETIVOS DEL NEGOCIO
 # ----------------------------------------------------
 st.markdown("---")
 st.markdown("<h3 style='text-align: center; color: #1565C0;'>🌾 Ecosistema Digital AgroYaracuy</h3>", unsafe_allow_html=True)
@@ -99,7 +106,7 @@ with st.container():
 st.markdown("---")
 
 # ----------------------------------------------------
-# CONTROL DE ACCESO: PANTALLA DE LOGIN OBLIGATORIO
+# CONTROL DE ACCESO: LOGIN OBLIGATORIO
 # ----------------------------------------------------
 if not st.session_state.autenticado:
     st.sidebar.markdown("### 🔐 Iniciar Sesión en el Sistema")
@@ -126,11 +133,11 @@ if not st.session_state.autenticado:
             else:
                 st.sidebar.error("Usuario o contraseña incorrectos.")
     
-    st.warning("⚠️ **Acceso Restringido:** Debe iniciar sesión en el panel lateral para interactuar con las herramientas de subasta, cotización y gestión de la red.")
+    st.warning("⚠️ **Acceso Restringido:** Debe iniciar sesión en el panel lateral para utilizar las herramientas del sistema.")
     st.stop()
 
 # ----------------------------------------------------
-# SESIÓN ACTIVA: PANEL LATERAL Y RESTRICCIÓN DE MENÚS
+# SESIÓN ACTIVA Y MENÚ POR ROLES
 # ----------------------------------------------------
 st.sidebar.markdown("### 👤 Sesión Activa")
 st.sidebar.success(f"**Usuario:** {st.session_state.usuario_actual}\n\n**Rol:** {st.session_state.rol_actual}\n\n**Tasa BCV:** {st.session_state.tasa_bcv:.2f} VES")
@@ -155,8 +162,9 @@ if st.session_state.rol_actual == "🚜 Productor":
 
 elif st.session_state.rol_actual == "🏪 Agrotienda":
     menu = st.sidebar.selectbox("Seleccione Módulo:", [
-        "📝 Afiliación y Contrato Mercantil",
         "🏪 Panel de Cotización Abierta",
+        "📦 Mi Catálogo de Inventario Frecuente",
+        "📝 Afiliación y Contrato Mercantil",
         "📈 Tendencias de Precios del Mercado",
         "💳 Pasarela de Pago Móvil BDV"
     ])
@@ -166,13 +174,13 @@ else: # Administrador
         "📊 Panel General y Tasa BCV (24h)",
         "📑 Auditoría Detallada de Transacciones",
         "💸 Liquidación y Pagos a Agrotiendas",
+        "📊 Reportes Contables Exportables",
         "💬 Gestión de Agradecimiento",
-        "📄 Generador de Notas de Entrega (PDF)",
-        "💳 Pasarela de Pago General BDV"
+        "📄 Generador de Notas de Entrega (PDF)"
     ])
 
 # ----------------------------------------------------
-# EJECUCIÓN DE MÓDULOS INTERACTIVOS SEGÚN EL ROL
+# EJECUCIÓN DE MÓDULOS SEGÚN ROL
 # ----------------------------------------------------
 
 # --- MÓDULOS DE PRODUCTOR ---
@@ -191,7 +199,7 @@ if menu == "🛒 Lanzar Subasta Inversa (Anónima)":
 
     with tab_p2:
         st.subheader("Paso 2: Especifique el Requerimiento")
-        insumo_req = st.text_input("Insumo / Repuesto Solicitado:", placeholder="Ej. Urea 46%, Filtro de Aceite Tractor, Vacuna Aftosa...", key="s_ins")
+        insumo_req = st.text_input("Insumo / Repuesto Solicitado:", placeholder="Ej. Urea 46%, Filtro de Aceite Tractor...", key="s_ins")
         cant_req = st.text_input("Cantidad Necesaria:", placeholder="Ej. 20 sacos, 2 unidades...", key="s_can")
 
     with tab_p3:
@@ -207,10 +215,10 @@ if menu == "🛒 Lanzar Subasta Inversa (Anónima)":
                     "id": pid, "productor": nombre_prod, "estado": estado_prod,
                     "municipio": municipio_prod, "insumo": insumo_req, "cantidad": cant_req, "telefono": tel_prod
                 })
-                st.toast("¡Subasta emitida exitosamente a las agrotiendas!", icon="✅")
-                st.success(f"¡Subasta Inversa #{pid} publicada con éxito! La red de agrotiendas en {estado_prod} comenzará a pujar por ofrecerle el mejor precio.")
+                st.toast("¡Subasta emitida exitosamente!", icon="✅")
+                st.success(f"¡Subasta Inversa #{pid} publicada con éxito! Las agrotiendas regionales comenzarán a pujar.")
             else:
-                st.error("Por favor complete todos los datos requeridos en las pestañas anteriores.")
+                st.error("Por favor complete todos los datos requeridos.")
 
 elif menu == "📊 Mis Pujas y Adjudicación":
     st.header("📊 Seguimiento de Pujas y Adjudicación")
@@ -222,7 +230,7 @@ elif menu == "📊 Mis Pujas y Adjudicación":
                 ofertas_p = [o for o in st.session_state.ofertas if o["pedido_id"] == p["id"]]
                 
                 if not ofertas_p:
-                    st.caption("_Las agrotiendas están analizando su requerimiento. Pronto recibirá ofertas competitivas..._")
+                    st.caption("_Las agrotiendas están analizando su requerimiento..._")
                 else:
                     for o in sorted(ofertas_p, key=lambda x: x["precio"]):
                         c1, c2, c3 = st.columns([2, 2, 2])
@@ -238,7 +246,7 @@ elif menu == "📊 Mis Pujas y Adjudicación":
                                     "zona": f"{p['estado']} - {p['municipio']}"
                                 })
                                 st.toast("¡Oferta Adjudicada!", icon="🎉")
-                                st.success("¡Adjudicación exitosa! Proceda al pago en la pestaña 'Pagar Producto Adquirido'.")
+                                st.success("¡Adjudicación exitosa! Proceda al pago en la sección 'Pagar Producto Adquirido'.")
                                 msg = f"Hola {o['tienda']}, he adjudicado su oferta de ${o['precio']:.2f} en {EMPRESA_NOMBRE}."
                                 url_wa = f"https://wa.me/58{o['telefono_tienda'][-10:]}?text={urllib.parse.quote(msg)}"
                                 st.markdown(f"[💬 Contactar Agrotienda vía WhatsApp]({url_wa})", unsafe_allow_html=True)
@@ -265,7 +273,7 @@ elif menu == "💳 Pagar Producto Adquirido":
                     if st.form_submit_button("Confirmar Pago del Insumo"):
                         if ref_pago_prod:
                             st.toast("¡Pago reportado con éxito!", icon="💸")
-                            st.success("¡Pago validado y notificado al administrador y a la agrotienda!")
+                            st.success("¡Pago validado y notificado!")
                             msg_pago_prod = f"Hola {t['tienda']}, he pagado el insumo {t['insumo']} por ${t['precio']:.2f} ({monto_ves_prod:,.2f} VES). Ref: {ref_pago_prod}."
                             url_wa_pago = f"https://wa.me/58{t['telefono_tienda'][-10:]}?text={urllib.parse.quote(msg_pago_prod)}"
                             st.markdown(f"[📲 Notificar Pago a la Agrotienda vía WhatsApp]({url_wa_pago})", unsafe_allow_html=True)
@@ -275,19 +283,15 @@ elif menu == "💳 Pagar Producto Adquirido":
 
 elif menu == "📈 Tendencias de Precios del Mercado":
     st.header("📈 Visualizador Bursátil y Tendencias de Precios")
-    st.markdown("Consulte el comportamiento y evolución del precio promedio de los insumos principales en Yaracuy, Lara y Carabobo.")
+    st.markdown("Consulte la evolución del precio promedio de insumos clave en Yaracuy, Lara y Carabobo.")
     
-    insumo_grafico = st.selectbox("Seleccione Insumo para Análisis:", ["Urea 46%", "NPK 12-24-12", "Semilla Maíz Certificada", "Vacuna Aftosa Bovino", "Filtro Tractor"])
+    insumo_grafico = st.selectbox("Seleccione Insumo:", ["Urea 46%", "NPK 12-24-12", "Semilla Maíz Certificada", "Vacuna Aftosa Bovino"])
     
-    # Datos simulados de tendencia bursátil agrícola
     datos_tendencia = {
         "Semana": ["Semana 1", "Semana 2", "Semana 3", "Semana 4 (Actual)"],
         "Precio Promedio (USD)": [38.0, 36.5, 35.0, 34.2] if insumo_grafico == "Urea 46%" else [45.0, 44.0, 43.5, 42.0]
     }
-    df_tendencia = pd.DataFrame(datos_tendencia).set_index("Semana")
-    
-    st.line_chart(df_tendencia)
-    st.caption(f"💡 El mercado de **{insumo_grafico}** muestra una tendencia competitiva favorable a la baja debido a la subasta inversa en la red.")
+    st.line_chart(pd.DataFrame(datos_tendencia).set_index("Semana"))
 
 elif menu == "🚜 Requerimientos del Campo":
     st.header("📋 Directorio de Insumos y Urgencias Agrícolas")
@@ -295,41 +299,33 @@ elif menu == "🚜 Requerimientos del Campo":
 
 
 # --- MÓDULOS DE AGROTIENDA ---
-elif menu == "📝 Afiliación y Contrato Mercantil":
-    st.header("📝 Contrato de Adhesión e Incorporación Comercial")
+elif menu == "📦 Mi Catálogo de Inventario Frecuente":
+    st.header("📦 Gestión de Inventario de Productos Frecuentes")
+    st.markdown("Cargue sus productos recurrentes para responder cotizaciones de subastas con rapidez.")
     
-    tab_c1, tab_c2 = st.tabs(["📄 Contrato Legal de Corretaje", "✍️ Formulario de Registro"])
-    
-    with tab_c1:
-        st.markdown(f"**CONTRATO DE ADHESIÓN MERCANTIL — {EMPRESA_NOMBRE} (RIF: {EMPRESA_RIF})**")
-        st.write("PRIMERA: La agrotienda operará bajo el modelo de corretaje digital y subasta inversa en Yaracuy, Lara y Carabobo.")
-        st.write("SEGUNDA: Prohibida la elusión o trato directo fuera de plataforma previo a la adjudicación.")
-        st.write(f"TERCERA: Operaciones bancarias centralizadas mediante {EMPRESA_BANCO}, Pagomóvil: {EMPRESA_TELEFONO}.")
+    with st.form("form_add_prod_cat"):
+        c_prod_nom = st.text_input("Nombre del Insumo / Repuesto:")
+        c_prod_cat = st.selectbox("Categoría:", ["Fertilizantes", "Semillas", "Agroquímicos", "Sanidad Animal", "Maquinaria"])
+        c_prod_precio = st.number_input("Precio Referencial (USD $):", min_value=0.0, format="%.2f")
         
-    with tab_c2:
-        with st.form("form_afilia_t"):
-            t_nom = st.text_input("Nombre Comercial de la Agrotienda:")
-            t_rif = st.text_input("RIF de la Empresa:")
-            t_est = st.selectbox("Estado de Ubicación:", ["Yaracuy", "Lara", "Carabobo"])
-            t_mun = st.text_input("Municipio:")
-            t_tel = st.text_input("WhatsApp Comercial:")
-            t_acepta = st.checkbox("✅ Acepto los términos del contrato de adhesión mercantil.")
-            
-            if st.form_submit_button("Firmar Adhesión y Registrar"):
-                if t_acepta and t_nom and t_rif:
-                    st.session_state.agrotiendas_registradas.append({"nombre": t_nom, "estado": t_est, "municipio": t_mun, "telefono": t_tel})
-                    st.toast("¡Agrotienda Afiliada con éxito!", icon="🏢")
-                    st.success(f"¡Felicidades! {t_nom} ha sido registrada exitosamente en la red.")
-                else:
-                    st.error("Debe completar los campos obligatorios y marcar la aceptación legal.")
+        if st.form_submit_button("➕ Agregar al Catálogo"):
+            if c_prod_nom and c_prod_precio > 0:
+                st.session_state.catalogo_productos.append({
+                    "producto": c_prod_nom, "categoria": c_prod_cat, "precio_ref": c_prod_precio
+                })
+                st.toast("Producto agregado al catálogo", icon="📦")
+                st.success("¡Insumo registrado exitosamente!")
+            else:
+                st.error("Ingrese nombre y precio válido.")
+                
+    st.subheader("📋 Insumos Frecuentes Registrados")
+    st.dataframe(pd.DataFrame(st.session_state.catalogo_productos), use_container_width=True)
 
 elif menu == "🏪 Panel de Cotización Abierta":
     st.header("🏪 Panel de Cotización y Competencia (Agrotiendas)")
-    st.markdown("Filtre las solicitudes de compra activas por ubicación geográfica y envíe sus mejores pujas de precio.")
+    st.markdown("Filtre solicitudes por estado y envíe sus mejores ofertas de precio.")
     
-    # Filtro geográfico interactivo
     filtro_estados = st.multiselect("Filtrar Solicitudes por Estado:", ["Yaracuy", "Lara", "Carabobo"], default=["Yaracuy", "Lara", "Carabobo"])
-    
     pedidos_filtrados = [p for p in st.session_state.pedidos if p['estado'] in filtro_estados]
     
     if not pedidos_filtrados:
@@ -339,7 +335,7 @@ elif menu == "🏪 Panel de Cotización Abierta":
             with st.container():
                 st.markdown(f"### 🔔 Requerimiento #{p['id']} - Zona: [{p['estado']}] Municipio {p['municipio']}")
                 st.write(f"**Insumo Solicitado:** {p['insumo']} | **Cantidad:** {p['cantidad']}")
-                st.info("🔒 _Identidad del productor protegida contra desintermediación._")
+                st.info("🔒 _Identidad del productor protegida._")
                 
                 with st.form(f"form_cot_{p['id']}"):
                     c_a, c_b = st.columns(2)
@@ -360,16 +356,42 @@ elif menu == "🏪 Panel de Cotización Abierta":
                                 "precio": precio_ofertado, "tiempo": tiempo_entrega, "telefono_tienda": telefono_tienda
                             })
                             st.toast("¡Puja enviada a la subasta!", icon="💰")
-                            st.success("¡Oferta publicada exitosamente! El productor podrá ver su precio de forma anónima.")
+                            st.success("¡Oferta publicada exitosamente!")
                         else:
                             st.error("Ingrese su nombre comercial y un precio válido.")
                 st.divider()
+
+elif menu == "📝 Afiliación y Contrato Mercantil":
+    st.header("📝 Contrato de Adhesión e Incorporación Comercial")
+    tab_c1, tab_c2 = st.tabs(["📄 Contrato Legal de Corretaje", "✍️ Formulario de Registro"])
+    
+    with tab_c1:
+        st.markdown(f"**CONTRATO DE ADHESIÓN MERCANTIL — {EMPRESA_NOMBRE} (RIF: {EMPRESA_RIF})**")
+        st.write("PRIMERA: La agrotienda operará bajo el modelo de corretaje digital y subasta inversa.")
+        st.write("SEGUNDA: Prohibida la elusión o trato directo fuera de plataforma previo a la adjudicación.")
+        st.write(f"TERCERA: Operaciones bancarias centralizadas mediante {EMPRESA_BANCO}, Pagomóvil: {EMPRESA_TELEFONO}.")
+        
+    with tab_c2:
+        with st.form("form_afilia_t"):
+            t_nom = st.text_input("Nombre Comercial de la Agrotienda:")
+            t_rif = st.text_input("RIF de la Empresa:")
+            t_est = st.selectbox("Estado de Ubicación:", ["Yaracuy", "Lara", "Carabobo"])
+            t_mun = st.text_input("Municipio:")
+            t_tel = st.text_input("WhatsApp Comercial:")
+            t_acepta = st.checkbox("✅ Acepto los términos del contrato de adhesión mercantil.")
+            
+            if st.form_submit_button("Firmar Adhesión y Registrar"):
+                if t_acepta and t_nom and t_rif:
+                    st.session_state.agrotiendas_registradas.append({"nombre": t_nom, "estado": t_est, "municipio": t_mun, "telefono": t_tel})
+                    st.toast("¡Agrotienda Afiliada!", icon="🏢")
+                    st.success(f"¡Felicidades! {t_nom} ha sido registrada exitosamente.")
+                else:
+                    st.error("Debe completar los campos obligatorios.")
 
 
 # --- MÓDULOS DE ADMINISTRADOR ---
 elif menu == "📊 Panel General y Tasa BCV (24h)":
     st.header("⚙️ Panel de Control del Administrador y Tasa Oficial")
-    
     col_adm1, col_adm2 = st.columns(2)
     with col_adm1:
         st.subheader("💱 Actualizador de Tasa BCV (24h)")
@@ -377,8 +399,8 @@ elif menu == "📊 Panel General y Tasa BCV (24h)":
         if st.button("🔄 Guardar y Actualizar Tasa BCV"):
             st.session_state.tasa_bcv = nueva_tasa
             st.toast("Tasa BCV Sincronizada", icon="💱")
-            st.success(f"¡Tasa BCV actualizada a {nueva_tasa:.2f} VES/USD con vigencia de 24h!")
-        st.caption(f"📅 Última sincronización registrada: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+            st.success(f"¡Tasa BCV actualizada a {nueva_tasa:.2f} VES/USD!")
+        st.caption(f"📅 Última sincronización: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
         
     with col_adm2:
         st.subheader("📈 Resumen del Ecosistema")
@@ -386,40 +408,46 @@ elif menu == "📊 Panel General y Tasa BCV (24h)":
         st.metric("Agrotiendas Afiliadas", len(st.session_state.agrotiendas_registradas))
         st.metric("Transacciones Cerradas", len(st.session_state.transacciones_cerradas))
 
-elif menu == "📑 Auditoría Detallada de Transacciones":
-    st.header("📑 Auditoría Detallada de Transacciones Cerradas")
-    st.markdown("Visualice el productor adjudicatario, la agrotienda proveedora, el producto y la oferta del precio pujado.")
+elif menu == "📊 Reportes Contables Exportables":
+    st.header("📊 Reportes Contables y Balances Exportables")
+    st.markdown("Exporte el balance auditado de comisiones y transacciones a formato CSV/Excel.")
     
     if not st.session_state.transacciones_cerradas:
-        st.info("No hay transacciones cerradas registradas actualmente en el sistema.")
+        st.info("Sin transacciones cerradas para exportar.")
+    else:
+        df_export = pd.DataFrame(st.session_state.transacciones_cerradas)
+        st.dataframe(df_export, use_container_width=True)
+        
+        csv_data = df_export.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Descargar Reporte de Transacciones (CSV)",
+            data=csv_data,
+            file_name=f"Reporte_AgroYaracuy_{datetime.now().strftime('%Y%m%d')}.csv",
+            mime="text/csv"
+        )
+
+elif menu == "📑 Auditoría Detallada de Transacciones":
+    st.header("📑 Auditoría Detallada de Transacciones Cerradas")
+    if not st.session_state.transacciones_cerradas:
+        st.info("No hay transacciones cerradas registradas actualmente.")
     else:
         for t in st.session_state.transacciones_cerradas:
             monto_ves_audit = t['precio'] * st.session_state.tasa_bcv
             with st.container():
                 st.markdown(f"### 📋 Transacción ID #{t['id_transaccion']}")
                 col_a, col_b, col_c = st.columns(3)
-                with col_a:
-                    st.write(f"**🚜 Productor:** {t['productor']}")
-                    st.caption(f"Telf: {t['telefono_productor']}")
-                with col_b:
-                    st.write(f"**🏪 Agrotienda:** {t['tienda']}")
-                    st.caption(f"Telf: {t['telefono_tienda']}")
-                with col_c:
-                    st.write(f"**📦 Producto / Insumo:** {t['insumo']}")
-                    st.caption(f"Cantidad: {t['cantidad']}")
-                
-                st.markdown(f"💲 **Precio Pujado / Ofertado:** **${t['precio']:.2f} USD** (~{monto_ves_audit:,.2f} VES a Tasa BCV)")
-                st.write(f"📍 **Zona Regional:** {t['zona']}")
+                with col_a: st.write(f"**🚜 Productor:** {t['productor']}\n\nTelf: {t['telefono_productor']}")
+                with col_b: st.write(f"**🏪 Agrotienda:** {t['tienda']}\n\nTelf: {t['telefono_tienda']}")
+                with col_c: st.write(f"**📦 Producto:** {t['insumo']}\n\nCantidad: {t['cantidad']}")
+                st.markdown(f"💲 **Precio Pujado:** **${t['precio']:.2f} USD** (~{monto_ves_audit:,.2f} VES)")
                 st.divider()
 
 elif menu == "💸 Liquidación y Pagos a Agrotiendas":
     st.header("💸 Módulo de Liquidación y Pago a Agrotiendas")
-    st.markdown("Calcule el margen de corretaje contractual de la empresa y procese la transferencia neta a la agrotienda.")
-    
     if not st.session_state.transacciones_cerradas:
         st.info("No hay transacciones cerradas para liquidar.")
     else:
-        comision_porcentaje = st.slider("Margen / Comisión de Corretaje de la Empresa (%):", min_value=1.0, max_value=10.0, value=3.0, step=0.5)
+        comision_porcentaje = st.slider("Margen / Comisión de Corretaje (%):", min_value=1.0, max_value=10.0, value=3.0, step=0.5)
         st.divider()
         
         for t in st.session_state.transacciones_cerradas:
@@ -429,56 +457,47 @@ elif menu == "💸 Liquidación y Pagos a Agrotiendas":
             monto_neto_ves = monto_neto_agrotienda_usd * st.session_state.tasa_bcv
             
             with st.container():
-                st.markdown(f"### 🧾 Liquidación Transacción #{t['id_transaccion']} - Agrotienda: {t['tienda']}")
-                st.write(f"• **Insumo:** {t['insumo']} ({t['cantidad']}) | **Productor:** {t['productor']}")
-                st.write(f"• **Monto Ofertado Total:** ${monto_total_usd:.2f} USD")
-                st.write(f"• **Margen de la Empresa ({comision_porcentaje}%):** ${comision_empresa_usd:.2f} USD")
-                st.success(f"💰 **Monto Neto a Pagar a la Agrotienda:** **${monto_neto_agrotienda_usd:.2f} USD** (~{monto_neto_ves:,.2f} VES)")
+                st.markdown(f"### 🧾 Liquidación Transacción #{t['id_transaccion']} - {t['tienda']}")
+                st.write(f"• **Insumo:** {t['insumo']} ({t['cantidad']}) | **Monto Total:** ${monto_total_usd:.2f} USD")
+                st.write(f"• **Comisión Empresa ({comision_porcentaje}%):** ${comision_empresa_usd:.2f} USD")
+                st.success(f"💰 **Monto Neto Agrotienda:** **${monto_neto_agrotienda_usd:.2f} USD** (~{monto_neto_ves:,.2f} VES)")
                 
                 with st.form(f"form_liq_{t['id_transaccion']}"):
-                    ref_pago_agro = st.text_input("Número de Referencia de Pago a la Agrotienda:")
-                    banco_destino_agro = st.text_input("Banco de Destino de la Agrotienda:")
-                    
-                    if st.form_submit_button("Registrar Liquidación y Pago"):
+                    ref_pago_agro = st.text_input("Referencia de Transferencia a Agrotienda:")
+                    if st.form_submit_button("Registrar Liquidación"):
                         if ref_pago_agro:
                             st.session_state.pagos_agrotiendas.append({
-                                "id_transaccion": t['id_transaccion'],
-                                "agrotienda": t['tienda'],
-                                "monto_neto_usd": monto_neto_agrotienda_usd,
-                                "referencia": ref_pago_agro,
-                                "fecha": datetime.now().strftime('%d/%m/%Y %H:%M')
+                                "id_transaccion": t['id_transaccion'], "agrotienda": t['tienda'],
+                                "monto_neto_usd": monto_neto_agrotienda_usd, "referencia": ref_pago_agro
                             })
                             st.toast("Liquidación Registrada", icon="🏦")
-                            st.success(f"¡Pago a la agrotienda {t['tienda']} registrado con éxito!")
+                            st.success(f"¡Pago a {t['tienda']} registrado!")
                         else:
-                            st.error("Ingrese el número de referencia de la transferencia.")
+                            st.error("Ingrese número de referencia.")
                 st.divider()
 
 elif menu == "💬 Gestión de Agradecimiento":
     st.header("💬 Gestión de Agradecimiento a Productores")
-    st.markdown("Herramienta administrativa para enviar mensajes de agradecimiento institucional por WhatsApp.")
-    
     with st.form("form_agradecimiento_admin"):
-        prod_telf_adm = st.text_input("Teléfono WhatsApp del Productor (Ej: 04121234567):")
+        prod_telf_adm = st.text_input("Teléfono WhatsApp del Productor:")
         prod_nombre_adm = st.text_input("Nombre del Productor / Finca:")
         
-        if st.form_submit_button("Generar Enlace de Agradecimiento"):
+        if st.form_submit_button("Generar Enlace WhatsApp"):
             if prod_telf_adm and prod_nombre_adm:
-                msg_agradecimiento_adm = f"¡Estimado(a) {prod_nombre_adm}! De parte de la directiva y equipo técnico de {EMPRESA_NOMBRE} (AgroDigital Venezuela), le expresamos nuestro más sincero agradecimiento por la confianza depositada al utilizar nuestra plataforma para potenciar su producción agrícola."
+                msg_agradecimiento_adm = f"¡Estimado(a) {prod_nombre_adm}! De parte de {EMPRESA_NOMBRE} (AgroDigital Venezuela), le agradecemos la confianza al utilizar nuestra plataforma para potenciar su producción."
                 url_wa_adm = f"https://wa.me/58{prod_telf_adm[-10:]}?text={urllib.parse.quote(msg_agradecimiento_adm)}"
-                st.toast("Enlace WhatsApp Generado", icon="📲")
-                st.success("¡Enlace generado exitosamente!")
-                st.markdown(f"[💬 Enviar mensaje de agradecimiento vía WhatsApp]({url_wa_adm})", unsafe_allow_html=True)
+                st.toast("Enlace Generado", icon="📲")
+                st.markdown(f"[💬 Enviar mensaje vía WhatsApp]({url_wa_adm})", unsafe_allow_html=True)
             else:
-                st.error("Por favor complete el teléfono y el nombre del productor.")
+                st.error("Complete los datos requeridos.")
 
 elif menu == "📄 Generador de Notas de Entrega (PDF)":
     st.header("📄 Generador de Documentación Legal (PDF)")
     if not st.session_state.transacciones_cerradas:
-        st.info("No hay transacciones cerradas para certificar.")
+        st.info("Sin transacciones cerradas.")
     else:
         for t in st.session_state.transacciones_cerradas:
-            st.markdown(f"**Transacción #{t['id_transaccion']}** | Productor: {t['productor']} ➔ Agrotienda: {t['tienda']} (${t['precio']:.2f} USD)")
+            st.markdown(f"**Transacción #{t['id_transaccion']}** | {t['productor']} ➔ {t['tienda']} (${t['precio']:.2f} USD)")
             if st.button(f"📥 Descargar PDF #{t['id_transaccion']}", key=f"pdf_gen_{t['id_transaccion']}"):
                 class PDF(FPDF):
                     def header(self):
@@ -504,17 +523,5 @@ elif menu == "📄 Generador de Notas de Entrega (PDF)":
                 pdf.output(filename)
                 
                 with open(filename, "rb") as f_pdf:
-                    st.download_button(label=f"⬇️ Descargar Archivo PDF", data=f_pdf, file_name=filename, mime="application/pdf")
+                    st.download_button(label="⬇️ Descargar PDF", data=f_pdf, file_name=filename, mime="application/pdf")
             st.divider()
-
-if menu == "💳 Pasarela de Pago General BDV":
-    st.header("📲 Pasarela de Pago Móvil Oficial (General)")
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        st.info(f"🏦 Datos Bancarios:\n\n• Razón Social: {EMPRESA_NOMBRE}\n• RIF: {EMPRESA_RIF}\n• Banco: {EMPRESA_BANCO}\n• Teléfono: {EMPRESA_TELEFONO}\n• Tasa BCV Actual: {st.session_state.tasa_bcv:.2f} VES")
-    with col2:
-        with st.form("form_pago_gen"):
-            monto_p = st.number_input("Monto en USD:", min_value=0.0, format="%.2f")
-            monto_ves = monto_p * st.session_state.tasa_bcv
-            st.write(f"Equivalente a pagar: **{monto_ves:,.2f} VES**")
-            ref_p = st.text_input
